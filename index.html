@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pojunews · 破局信息中台（AI-Ron 搭建）</title>
+<style>
+:root{
+  --bg:#0F1219; --panel:#151A26; --panel2:#1A2130; --line:rgba(255,255,255,.07);
+  --tx:#E7EAF2; --tx2:#C6CCDC; --tx3:#8A92A8; --dim:#69718A;
+  --org:#FF7A3D; --org2:#FF9B6B; --teal:#2DD4BF; --teal2:#5FE0CE; --gold:#F5C518;
+  --sans:'Noto Sans SC',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  --serif:'Noto Serif SC',Georgia,'Songti SC',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1280px;margin:0 auto;padding:22px 22px 10px}
+/* ===== header ===== */
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.h-title{display:flex;align-items:center;gap:12px}
+.h-logo{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,#2A3145,#1A2130);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+.h-logo svg{width:24px;height:24px}
+h1{font-family:var(--serif);font-size:26px;font-weight:900;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+h1 .ac{color:var(--org)}
+.u-pill{font-family:var(--sans);font-size:11px;font-weight:600;color:var(--teal2);background:rgba(45,212,191,.1);border:1px solid rgba(45,212,191,.3);border-radius:99px;padding:2px 10px;display:inline-flex;align-items:center;gap:6px}
+.h-sub{font-size:12px;color:var(--dim);margin-top:3px}
+.h-meta{text-align:right;font-size:12px;color:var(--tx3);line-height:1.8}
+.h-meta b{color:var(--teal2);font-weight:600}
+.h-meta .sep{color:var(--dim);margin:0 6px}
+/* ===== panel ===== */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;min-width:0}
+.p-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.p-t{font-family:var(--serif);font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.p-t .dot{width:8px;height:8px;border-radius:50%;background:var(--org);flex:none}
+.p-t .dot.t2{background:var(--gold)}
+.p-t .dot.t3{background:var(--teal)}
+.p-t .dot.t4{background:#8B7CF6}
+.p-sub{font-size:11px;color:var(--dim);font-weight:400;font-family:var(--sans)}
+.grid2{display:grid;grid-template-columns:1.9fr 1fr;gap:14px;margin-bottom:14px}
+.grid2.even{grid-template-columns:1fr 1fr}
+.grid2>*{min-width:0}
+.empty{padding:28px 12px;text-align:center;color:var(--dim);font-size:12px}
+/* ===== KPI ===== */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:radial-gradient(130px 100px at 100% 0%,rgba(255,122,61,.12),transparent 70%),var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 15px;position:relative}
+.kpi-sub{font-size:11px;color:var(--dim);margin-top:4px;word-break:break-all;overflow-wrap:anywhere}
+.kpi-label{font-size:11px;color:var(--tx3);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.kpi-label .ic{width:14px;height:14px;flex:none}
+.kpi-num{font-family:var(--serif);font-size:26px;font-weight:900;line-height:1.15;color:var(--tx);display:block;word-break:break-all}
+.kpi-num small{font-size:13px;font-weight:600;color:var(--org2);margin-left:2px}
+.kpi.acc .kpi-num{color:var(--teal2)}
+.kpi.gold .kpi-num{color:var(--gold)}
+/* ===== 帖子列表 ===== */
+.pwrap{max-height:660px;overflow:auto;margin:0 -6px;padding:0 6px}
+.pwrap::-webkit-scrollbar{width:7px}
+.pwrap::-webkit-scrollbar-thumb{background:#2A3145;border-radius:99px}
+.prow{display:grid;grid-template-columns:172px minmax(0,1fr) 216px;gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.045);border-radius:8px;min-width:0}
+.prow:hover{background:var(--panel2)}
+.prow:last-child{border-bottom:none}
+.pa{display:flex;align-items:center;gap:8px;min-width:0}
+.pav{width:27px;height:27px;border-radius:50%;flex:none;overflow:hidden;background:#232B3B;display:flex;align-items:center;justify-content:center}
+.pav img{width:100%;height:100%;object-fit:cover;display:block}
+.pav.f{color:var(--org2);font-weight:700;font-size:13px}
+.pan{font-size:12px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pmid{min-width:0}
+.pt{font-size:13px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.badge-elite{display:inline-block;margin-right:6px;font-size:10px;color:#1A1400;background:var(--gold);border-radius:4px;padding:0 5px;font-weight:700;vertical-align:1px;flex:none}
+.psum{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.pm{display:flex;align-items:center;justify-content:flex-end;gap:8px;font-size:11px;min-width:0;overflow:hidden}
+.pd{color:var(--dim);white-space:nowrap}
+.pty{flex:none;border:1px solid rgba(255,122,61,.35);color:var(--org2);padding:1px 7px;border-radius:99px;font-size:10px;white-space:nowrap}
+.pty.long{border-color:rgba(45,212,191,.35);color:var(--teal2)}
+.pl{color:var(--org2);font-size:12px;white-space:nowrap}
+.pl .h{color:var(--dim);margin-right:2px;font-size:10px}
+/* ===== 每日精选 ===== */
+.recs-sec{margin-bottom:14px}
+.recgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:10px;max-height:380px;overflow:auto;padding-right:2px}
+.recgrid::-webkit-scrollbar{width:6px}
+.recgrid::-webkit-scrollbar-thumb{background:#2A3145;border-radius:99px}
+.rcard{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;display:flex;flex-direction:column;gap:6px;transition:border-color .15s;min-width:0}
+.rcard:hover{border-color:rgba(255,122,61,.55)}
+.rcard .r-top{display:flex;align-items:flex-start;gap:7px;min-width:0}
+.rcard .r-t{flex:1;font-size:13.5px;font-weight:700;color:var(--tx);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rcard .r-s{font-size:11.5px;color:var(--tx3);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rcard .r-why{font-size:10.5px;color:var(--org2);background:rgba(255,122,61,.1);border-radius:6px;padding:4px 8px;line-height:1.4}
+.rcard .r-meta{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--dim);margin-top:auto;padding-top:2px}
+.rcard .r-meta .pav{width:20px;height:20px}
+.rcard .r-meta .pan{font-size:11px;flex:1}
+.rcard .r-meta .pl{font-size:11px}
+/* ===== 行动 ===== */
+.acards{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-height:660px;overflow:auto;padding-right:2px}
+.acards::-webkit-scrollbar{width:6px}
+.acards::-webkit-scrollbar-thumb{background:#2A3145;border-radius:99px}
+.acard{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 14px;min-width:0;text-decoration:none;color:inherit;display:block;transition:border-color .15s}
+a.acard:hover{border-color:rgba(255,122,61,.55)}
+.acard .a-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:5px}
+.acard .a-name{flex:1 1 auto;min-width:0;font-size:15px;font-weight:700;color:var(--tx);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.acard .a-status{font-size:10px;color:#07100E;background:var(--teal);border-radius:99px;padding:2px 8px;font-weight:700;white-space:nowrap;flex:none}
+.acard .a-status.on{background:var(--org)}
+.acard .a-status.off{background:rgba(255,255,255,.1);color:var(--dim)}
+.acard .a-role{display:inline-block;font-size:10px;border-radius:99px;padding:1px 8px;margin-bottom:7px;white-space:nowrap}
+.acard .a-role.ta{color:#07100E;background:var(--teal);font-weight:700}
+.acard .a-role.co{color:#1A1400;background:var(--gold);font-weight:700}
+.acard .a-role.stu{color:var(--dim);border:1px solid rgba(255,255,255,.14)}
+.acard .a-note{font-size:11px;color:var(--tx3);line-height:1.5;margin-bottom:9px}
+.acard .a-meta{font-size:11px;color:var(--dim);display:flex;flex-wrap:wrap;gap:4px 12px}
+.acard .a-meta b{color:var(--tx2);font-weight:600}
+.acard .a-meta .enr{color:var(--org2);font-weight:700}
+/* ===== 组局 ===== */
+.gcol-main{max-height:520px;overflow:auto;padding-right:2px}
+.gcol-main::-webkit-scrollbar{width:6px}
+.gcol-main::-webkit-scrollbar-thumb{background:#2A3145;border-radius:99px}
+.gcol-title{font-size:12px;color:var(--tx3);margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.gcol-title b{color:var(--tx2)}
+.grow{display:flex;align-items:center;gap:6px 8px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.045);border-radius:6px;min-width:0;flex-wrap:wrap}
+.grow:hover{background:var(--panel2)}
+.grow .g-t{flex:1 1 auto;min-width:0;font-size:12.5px;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.grow .g-m{font-size:11px;color:var(--dim);white-space:nowrap;display:flex;align-items:center;gap:5px;flex:none;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:52%}
+.grow .g-m .g-host{color:var(--org2);font-weight:600;white-space:nowrap}
+.grow .g-st{font-size:10px;border-radius:99px;padding:1px 7px;white-space:nowrap;flex:none}
+.g-st.go{color:var(--teal2);border:1px solid rgba(45,212,191,.35)}
+.g-st.done{color:var(--dim);border:1px solid rgba(255,255,255,.12)}
+.g-st.soon{color:var(--org2);border:1px solid rgba(255,122,61,.4)}
+.gcity{margin-bottom:14px}
+.gcity:last-child{margin-bottom:2px}
+.gcity-t{font-size:11.5px;color:var(--tx3);margin:0 0 4px 2px;display:flex;align-items:center;gap:6px}
+.gcity-t::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--org)}
+.gcity-t b{color:var(--org2);font-weight:700}
+/* ===== 帖子 / 分段 tab ===== */
+.tabs,.seg{display:flex;gap:6px;flex:none}
+.tab-btn,.seg button{appearance:none;border:1px solid var(--line);background:var(--panel2);color:var(--tx3);font-size:11px;border-radius:99px;padding:3px 10px;cursor:pointer;transition:all .15s}
+.tab-btn b{font-weight:700;color:var(--tx3)}
+.tab-btn:hover,.seg button:hover{color:var(--tx)}
+.tab-btn.on,.seg button.on{background:var(--org);border-color:var(--org);color:#1A0E00;font-weight:600}
+.tab-btn.on b{color:#1A0E00}
+/* ===== 活跃球友 ===== */
+.m30{margin-top:16px;margin-bottom:14px}
+.m30grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:10px}
+.mcard{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:9px 11px;min-width:0;transition:border-color .15s}
+.mcard:hover{border-color:rgba(255,122,61,.5)}
+.mcard .mav{width:34px;height:34px;border-radius:50%;flex:none;overflow:hidden;background:#232B3B;display:flex;align-items:center;justify-content:center}
+.mcard .mav img{width:100%;height:100%;object-fit:cover;display:block}
+.mcard .mav.f{color:var(--org2);font-weight:700;font-size:14px}
+.mcard .minfo{flex:1;min-width:0}
+.mcard .mname{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.mcard .mdom{font-size:10px;color:var(--teal2);margin-top:1px;display:inline-block}
+.mcard .mscore{flex:none;text-align:center;line-height:1.1;font-family:var(--serif);font-size:16px;font-weight:700;color:var(--gold);margin-right:2px}
+.mcard .mscore i{display:block;font-style:normal;font-size:9px;font-weight:400;color:var(--tx3);font-family:var(--sans);margin-top:2px}
+.mcard .mnum{display:flex;gap:5px;font-size:10px;color:var(--dim);flex:none;flex-wrap:wrap;justify-content:flex-end;row-gap:3px;align-items:center}
+.mcard .mnum b{color:var(--tx2);font-weight:600;font-family:var(--serif)}
+.mcard .mnum .l{border:1px solid rgba(255,122,61,.35);color:var(--org2);border-radius:99px;padding:1px 6px;white-space:nowrap}
+.mcard .mnum .c{color:var(--teal2);white-space:nowrap}
+.mcard .mnum .n{color:var(--tx3);white-space:nowrap}
+/* ===== 活跃球友悬浮窗 ===== */
+.mtip{position:fixed;z-index:999;pointer-events:none;min-width:220px;max-width:290px;background:rgba(18,22,32,.97);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);backdrop-filter:blur(6px)}
+.mtip .mt-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.mtip .mt-av{width:38px;height:38px;border-radius:50%;flex:none;overflow:hidden;background:#232B3B;display:flex;align-items:center;justify-content:center}
+.mtip .mt-av img{width:100%;height:100%;object-fit:cover;display:block}
+.mtip .mt-av.f{color:var(--org2);font-weight:700;font-size:15px}
+.mtip .mt-name{font-size:14px;font-weight:700;color:var(--tx);word-break:break-all;line-height:1.3}
+.mtip .mt-dom{font-size:10px;color:var(--teal2);display:inline-block;margin-top:2px}
+.mtip .mt-score{font-family:var(--serif);font-size:18px;font-weight:700;color:var(--gold);text-align:right;line-height:1.1;margin-left:auto}
+.mtip .mt-score i{display:block;font-style:normal;font-size:9px;font-weight:400;color:var(--tx3);font-family:var(--sans)}
+.mtip .mt-num{display:flex;gap:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;margin-top:2px}
+.mtip .mt-num span{font-size:11px;color:var(--dim)}
+.mtip .mt-num b{color:var(--tx2);font-weight:600;font-family:var(--serif);font-size:13px;margin-left:2px}
+.mtip .mt-num .l{color:var(--org2)}
+.mtip .mt-num .c{color:var(--teal2)}
+/* ===== 表格 ===== */
+table.snap{width:100%;table-layout:fixed;border-collapse:collapse}
+table.snap th{font-size:11px;color:var(--dim);font-weight:500;text-align:left;padding:6px 6px;border-bottom:1px solid var(--line)}
+table.snap td{font-size:12px;color:var(--tx2);padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+table.snap tr:last-child td{border-bottom:none}
+table.snap td.n{font-family:var(--serif);font-weight:700;color:var(--tx)}
+table.snap td.hot{color:var(--org2)}
+table.snap .today{background:rgba(255,122,61,.06)}
+table.snap .lbl{font-size:10px;color:var(--org2);border:1px solid rgba(255,122,61,.35);border-radius:4px;padding:0 4px;margin-left:4px}
+/* ===== 运行记录 ===== */
+.runs{max-height:240px;overflow:auto}
+.runs::-webkit-scrollbar{width:6px}
+.runs::-webkit-scrollbar-thumb{background:#2A3145;border-radius:99px}
+.run{display:flex;align-items:center;gap:10px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.045);font-size:11px;color:var(--tx3)}
+.run:last-child{border-bottom:none}
+.run .r-t{flex:none;font-family:var(--serif);color:var(--tx2);font-weight:600}
+.run .r-b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.run .r-n{flex:none;color:var(--org2);font-weight:600}
+/* ===== footer ===== */
+footer{margin-top:12px;padding:16px 4px 30px;border-top:1px solid var(--line);font-size:11px;color:var(--dim);line-height:1.9}
+footer b{color:var(--tx3);font-weight:600}
+/* ===== responsive ===== */
+@media (max-width:1080px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .grid2,.grid2.even{grid-template-columns:1fr 1fr}
+  .grow .g-t{flex:1 1 100%;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+  .grow .g-m{white-space:normal;max-width:100%;flex:1 1 auto;align-items:flex-start;word-break:break-word;line-height:1.5}
+  .grow .g-m .g-host{white-space:nowrap}
+}
+@media (max-width:760px){
+  .wrap{padding:16px 12px 8px}
+  h1{font-size:22px}
+  .h-meta{text-align:left}
+  .kpis{grid-template-columns:repeat(2,1fr);gap:9px}
+  .kpi-num{font-size:22px}
+  .grid2,.grid2.even{grid-template-columns:1fr}
+  .acards{grid-template-columns:1fr}
+  .m30grid{grid-template-columns:1fr}
+  .prow{grid-template-columns:1fr;gap:4px;padding:9px 8px}
+  .pa{gap:8px}
+  .pm{justify-content:flex-start;gap:10px;margin-top:2px}
+  .pwrap{max-height:520px}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script>window.echarts||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"><\/script>');</script>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="h-title">
+        <div class="h-logo">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="#FF7A3D" stroke-width="1.8"/><path d="M12 4.6 L13.8 10.2 L19.4 12 L13.8 13.8 L12 19.4 L10.2 13.8 L4.6 12 L10.2 10.2 Z" fill="#FF7A3D"/></svg>
+        </div>
+        <div>
+          <h1>破局信息<span class="ac">中台</span> <span class="u-pill" id="userBadge">AI破局俱乐部</span></h1>
+          <div class="h-sub">Pojunews · 最新帖子 · 精华帖 · 行动组局 · 每日快照与活跃球友统计 · 由 <b style="color:var(--tx2)">AI-Ron 搭建</b>（参考 AI卷王龙哥方案）</div>
+        </div>
+      </div>
+    </div>
+    <div class="h-meta" id="hMeta"></div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="recs-sec">
+    <div class="panel">
+      <div class="p-h">
+        <div class="p-t"><span class="dot t2"></span>每日为你精选 · <b id="recCount">0</b> 篇</div>
+        <span class="p-sub">结合你的智能体定制与业务方向匹配 · 官方精华优先 · 点击卡片直达破局官网原帖</span>
+      </div>
+      <div class="recgrid" id="recsWrap"></div>
+    </div>
+  </section>
+
+  <section id="content">
+    <div class="grid2">
+      <div class="panel">
+        <div class="p-h">
+          <div class="p-t"><span class="dot"></span>帖子流</div>
+          <div class="tabs" id="postTabs">
+            <button type="button" class="tab-btn on" data-p="latest">最新帖 <b id="tL">0</b></button>
+            <button type="button" class="tab-btn" data-p="elite">精华帖 <b id="tE">0</b></button>
+          </div>
+        </div>
+        <div class="p-sub" style="padding:0 2px 8px">每天采集最新 100 条，当天不足按日期倒序填充至满 100（点击任意行直达原帖）</div>
+        <div class="pwrap" id="postWrap"></div>
+      </div>
+      <div class="panel">
+        <div class="p-h"><div class="p-t"><span class="dot t3"></span>行动 · 跟我相关</div><span class="p-sub">我参与的行动营与近期新开行动 · 点击查看详情页</span></div>
+        <div class="acards" id="actionWrap"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:14px">
+      <div class="p-h">
+        <div class="p-t"><span class="dot t4"></span>组局</div>
+        <div class="tabs" id="groupTabs">
+          <button type="button" class="tab-btn on" data-g="national">全国进行中 <b id="gNatCount">0</b></button>
+          <button type="button" class="tab-btn" data-g="joined">我参与的 <b id="gJoinCount">0</b></button>
+          <button type="button" class="tab-btn" data-g="hosted">我发起的 <b id="gHostCount">0</b></button>
+        </div>
+      </div>
+      <div class="gcol-main">
+        <div class="gcol-title" id="groupTitle">全国进行中 <b id="nationalTotal">0</b> 场 · 按城市整理</div>
+        <div id="nationalWrap"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stats" style="margin-top:16px">
+    <div class="grid2 even">
+      <div class="panel">
+        <div class="p-h"><div class="p-t"><span class="dot"></span>发帖趋势 · 近 30 天</div><span class="p-sub">采集窗口内每日帖子分布</span></div>
+        <div id="cTrend" style="height:280px"></div>
+      </div>
+      <div class="panel">
+        <div class="p-h"><div class="p-t"><span class="dot t3"></span>每日快照 · 最近 7 天</div><span class="p-sub">帖数 / 获赞 / 当日最活跃作者</span></div>
+        <table class="snap" id="snapTable">
+          <colgroup><col style="width:22%"><col style="width:15%"><col style="width:20%"><col style="width:43%"></colgroup>
+          <thead><tr><th>日期</th><th>帖数</th><th>获赞</th><th>最活跃作者</th></tr></thead>
+          <tbody id="snapBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="grid2 even">
+      <div class="panel">
+        <div class="p-h">
+          <div class="p-t"><span class="dot t4"></span>帖子点赞排行</div>
+          <span class="seg" id="rankSeg">
+            <button class="on" data-w="7">最近 7 天</button><button data-w="30">最近 1 个月</button>
+          </span>
+        </div>
+        <div id="cRank" style="height:300px"></div>
+      </div>
+      <div class="panel">
+        <div class="p-h"><div class="p-t"><span class="dot t2"></span>话题热度 · 最新 100 帖</div><span class="p-sub">按获赞合计</span></div>
+        <div id="cTopics" style="height:300px"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="m30" id="membersSection">
+    <div class="panel">
+      <div class="p-h">
+        <div class="p-t"><span class="dot t3"></span>活跃球友 · Top <b id="mCount">30</b></div>
+        <span class="p-sub">按球友发帖与互动热度计分：发帖×10 + 评论×2 + 获赞热度（悬浮查看详情 · 点击卡片直达球友官网主页）</span>
+      </div>
+      <div class="m30grid" id="membersWrap"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="panel">
+      <div class="p-h"><div class="p-t"><span class="dot t3"></span>运行记录</div><span class="p-sub">支持每 3 小时自动采集更新（运行 ./update.sh 立即刷新）</span></div>
+      <div class="runs" id="runsWrap"></div>
+    </div>
+  </section>
+
+  <footer>
+    <b>站点信息</b>：Pojunews · <b>AI-Ron 搭建</b>（基于 <code>@aipoju/breakout-cli</code> 每 12 小时自动采集同步）<br>
+    <b>数据口径</b>：数据由破局官网 CLI（<code>@aipoju/breakout-cli</code>）实盘采集自破局官网（<a href="https://aipoju.com" target="_blank" rel="noopener">aipoju.com</a>）；点赞取总赞 <code>totalLikeCount</code>（用户赞 + 系统赞），评论取 <code>totalCommentCount</code>；帖子、行动营、组局卡片均保留官网 <code>websiteUrl</code> 可点击直达。最新同步于 <span id="fUpdated">—</span>。
+  </footer>
+
+</div>
+
+<script>
+(function(){
+//__POJU_DATA_START__
+var POJU_DATA = {"schema": 3, "updatedAt": "2026-11-15 15:29", "capturedAt": "2026-11-15", "account": {"fullName": "AI.Ron", "userNumber": "31297", "avatar": "https://cos-cloud.aipoju.com/avatar/5d5818d8f217796bb5235d796df14cec.png", "identity": "圈友", "expireTime": "2027-03-24", "intro": "无界生长AI智能体定制BD · 包材胶粘剂行业解决方案提供商", "websiteUrl": "https://aipoju.com/user/data"}, "todayCount": 13, "fillCount": 87, "latest": [{"t": "#会员日# 我也来交作业了，过几天就是我生日了，希望真正的重生，在破局真正破局✊🏻✊🏻✊🏻", "a": "唐小安", "av": "https://cos-cloud.aipoju.com/avatar/14b379391e3f1fe1b3a81731158cb497.png", "d": "2026-11-15", "L": 0, "C": 2, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425122252181", "s": "", "id": "22258425122252181"}, {"t": "🦾0代码！45岁财务主管手搓WorkBuddy报销流水线：2天→30分钟，300张发票零退回（附3条提示词）", "a": "洋洋", "av": "https://cos-cloud.aipoju.com/avatar/94f1cf03c5db933e522a51c7a4447a4b.png", "d": "2026-11-15", "L": 7, "C": 1, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/14425142845144582", "s": "", "id": "14425142845144582"}, {"t": "【OpenAI 推出 ChatGPT 钱包：你的 AI 以后能替你买东西了】", "a": "智井AI", "av": "https://cos-cloud.aipoju.com/avatar/e83db6e46a861cebb90d7d6054a62907.png", "d": "2026-11-15", "L": 4, "C": 1, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425128542522", "s": "发生了什么： OpenAI 最近上线了 ChatGPT Wallet，简单说就是给 AI 智能体发一张\"代付卡\"。你先把银行卡绑一次，之后让 AI（它叫 dot）帮你找商品、比价，到付…", "id": "82258425128542522"}, {"t": "WorkBuddy 搭个人工作台保姆级拆解", "a": "黄桃子", "av": "https://cos-cloud.aipoju.com/avatar/2e72b36fcdd785a55a6f0923d49134f3.png", "d": "2026-11-15", "L": 15, "C": 2, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/22258425125128281", "s": "", "id": "22258425125128281"}, {"t": "我做软件开发 有一个咨询 是做农业机器人的 智能控制系统 有老板能做这个吗？客户一直在问😂", "a": "数据分析陈老师", "av": "https://cos-cloud.aipoju.com/avatar/a41958d5195489db5bdc39780fbcdcfe.png", "d": "2026-11-15", "L": 5, "C": 1, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425125125842", "s": "", "id": "82258425125125842"}, {"t": "拿最佳创意奖的是个服装店老板：快手AI创作赛第二期明天开", "a": "云帆", "av": "https://cos-cloud.aipoju.com/avatar/9200bde573955ab4b77da3da724aee7b.png", "d": "2026-11-15", "L": 6, "C": 2, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425484122582", "s": "发生了什么：11 月 10 日，快手「AI 全民创作季」第一期收官：一个月 2.3 万人参与、投稿 108.5 万条、总播放 5 亿次。拿专项奖的四位分别是剪辑师、巨兽迷、女频作者和一…", "id": "82258425484122582"}, {"t": "番茄把签约门槛降到 2 万字，代价是全勤和改编权", "a": "云帆", "av": "https://cos-cloud.aipoju.com/avatar/9200bde573955ab4b77da3da724aee7b.png", "d": "2026-11-15", "L": 6, "C": 2, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425484125881", "s": "11 月 12 日 20:18，番茄小说上了「万象新章」：不是写完小说等改编，是从官方题材库挑一部已播过的短漫剧，人物、世界观、走向、结局都不许改，扩写成长篇网文。题库首日 6 部、次…", "id": "22258425484125881"}, {"t": "来学GEO，却解决了一个困扰一年多的网站问题", "a": "关山阅", "av": "https://cos-cloud.aipoju.com/avatar/88bcf54c6e2b8aa433f12ed01c7498a9.png", "d": "2026-11-15", "L": 11, "C": 3, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/82258425484252242", "s": "", "id": "82258425484252242"}, {"t": "谢谢你！WorkBuddy，一位包揽了我所有PPT的朋友！", "a": "西堂AI视频", "av": "https://cos-cloud.aipoju.com/avatar/8b1d94efee03e503252c6aff32964be5.png", "d": "2026-11-15", "L": 16, "C": 2, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452414181484", "s": "这次我用 WorkBuddy 里的 6 个 PPT Skill，试了工作汇报、内部培训和客户提案。最有用的发现是，先想清楚文件做完给谁用：要继续改就交可编辑的 PPTX，只做演示就考虑…", "id": "55521452414181484"}, {"t": "第一次当组局官，我把「眼高手低」撞了三下", "a": "启点", "av": "https://cos-cloud.aipoju.com/avatar/f99ae02fffff772956a4a1b397c68ace.png", "d": "2026-11-15", "L": 16, "C": 4, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425484515542", "s": "一个月前我在天津台下写「下一场，我想自己做一次组局官」。11 月 14 号，济南，12 人报名、12 人到场，主题「破局CLI实操+企业AI·FDE交流」，这场局落地了。 站到台前那一…", "id": "82258425484515542"}, {"t": "#AI风向标# · 原创被判「AI 生成未标识」、禁言 1 天：法院判平台违约，钱一分没赔，举证责任换了人", "a": "钦文", "av": "https://cos-cloud.aipoju.com/avatar/343200abfb6b8608a194900fc0a18f47.png", "d": "2026-11-15", "L": 7, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425482458481", "s": "原创被判「AI 生成未标识」、禁言 1 天：法院判平台违约，钱一分没赔，举证责任换了人 发生了什么： 11 月 10 日，北京互联网法院开了涉平台治理网络服务合同纠纷审理情况发布会，通…", "id": "22258425482458481"}, {"t": "今天打开QQ空间，发现多了一个“空友爱看”公域曝光入口，在某个空间内可以直接看到。发说说时也能选择这个公域空间。而且每条内容动辄几千、几万点赞。", "a": "刘同学", "av": "https://cos-cloud.aipoju.com/avatar/1bcc2447e3b0809283c577ea69fe3b37.png", "d": "2026-11-15", "L": 9, "C": 4, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425482554141", "s": "从截图看，带“空友爱看”标识的内容点赞量分别有2.8万、1.5万，评论也有几千到1.6万，流量确实不小。 目前这个流量还是很大的。如果用AI自动运营的方式持续输出内容，这里会不会是新的…", "id": "22258425482554141"}, {"t": "这个账号主页只有19条作品，其中一条三千多赞，粉丝却有五千多。做法不复杂：把在抖音刷到的菜谱按“家常菜”“空气炸锅”“减脂餐”整理成收藏夹，很多人关注他，就图找菜方便。", "a": "刘同学", "av": "https://cos-cloud.aipoju.com/avatar/1bcc2447e3b0809283c577ea69fe3b37.png", "d": "2026-11-15", "L": 9, "C": 4, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425482554282", "s": "其实帮别人省时间，就是最直接的流量密码。 做美妆，可以把“新手化妆”“平价彩妆”“避雷清单”分好类；做健身，把“居家减脂”“器材使用”“饮食计划”整理好；做职场，把“简历模板”“面试技…", "id": "82258425482554282"}, {"t": "不会做 AI 短剧，写篇工具合集，提现 2596 元", "a": "云帆", "av": "https://cos-cloud.aipoju.com/avatar/9200bde573955ab4b77da3da724aee7b.png", "d": "2026-11-14", "L": 9, "C": 4, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452411421824", "s": "AI工具集（ai-bot.cn）11 月 13 日发了一篇复盘：编辑盘了一遍 2026 年火的 AI 短剧/漫剧工具，写成合集发在知乎，没剪一条片、没出一次镜——月底从 CakeGro…", "id": "55521452411421824"}, {"t": "微信开放平台为个人开发者和OPC（一人公司）推出三大支持，从更好变现，到原创保护，再到AI资源支持，让一个人就可以把小程序做成一门生意。做小程序的三个一定要开通！", "a": "飞掌柜", "av": "https://cos-cloud.aipoju.com/avatar/549f07ba6bc44421987a62afa1f4d5dc.png", "d": "2026-11-14", "L": 10, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425488248122", "s": "1、用户的“喜欢”，可以变成赞赏（见图1、2） 个人小程序接入「小程序赞赏组件」后，页面会出现「喜欢开发者」按钮，用户点击即跳转至开发者的贴图完成赞赏；有人喜欢后，页面还会展示喜欢人数…", "id": "82258425488248122"}, {"t": "#AI风向标# · “智囊团 ExpertHub”是腾讯官方推出的专家平台，核心使命是“聚智为谋，引领未来”。它致力于汇聚各领域的顶尖实战专家，为腾讯前沿 AI 项目（如混元大模型）提…", "a": "阿牛", "av": "https://cos-cloud.aipoju.com/avatar/e65a641684315ab7b8d556d7d5eb6af1.png", "d": "2026-11-14", "L": 7, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425451448421", "s": "“智囊团 ExpertHub”是腾讯官方推出的专家平台，核心使命是“聚智为谋，引领未来”。它致力于汇聚各领域的顶尖实战专家，为腾讯前沿 AI 项目（如混元大模型）提供高质量数据集、内容…", "id": "22258425451448421"}, {"t": "收藏的文章全在吃灰？我用 WorkBuddy + Obsidian 搭了个会自动整理的 AI 知识库（附保姆教程", "a": "天津老秦", "av": "https://cos-cloud.aipoju.com/avatar/bc324384b564bfbba2b4d7b590deb6c6.png", "d": "2026-11-14", "L": 34, "C": 6, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/45548254241848848", "s": "", "id": "45548254241848848"}, {"t": "时间稀缺状态下，我在AI行动营的碎片化学习实操与踩坑记录", "a": "xxq", "av": "https://cos-cloud.aipoju.com/avatar/b5e2f519311d1ec4f6b7efd9bd7f9f0d.png", "d": "2026-11-14", "L": 17, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/45548254241424288", "s": "大家好，我是本次AI行动营的学员xxq。最初报名本次AI破局行动营，我的核心目标非常明确：系统掌握AI提示词逻辑、AI工具实操方法，学会搭建属于自己的轻量化AI工作流，用AI替代低效重…", "id": "45548254241424288"}, {"t": "#AI风向标# 广电总局微短剧两个月专项治理：严管AI“盗脸偷声”、低俗同质化，创作号避坑必看", "a": "向好", "av": "https://cos-cloud.aipoju.com/avatar/7ba396c7bea49f0153667cc95388bb2b.png", "d": "2026-11-14", "L": 7, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/45548254241452248", "s": "广电总局于2026年11月初部署了新一轮微短剧低俗化同质化专项治理，治理期为2026年11月1日至12月底，为期两个月。这是今年以来监管部门第三次针对微短剧出手，也是AI微短剧和算法分…", "id": "45548254241452248"}, {"t": "你脑子里那个笃定了好几年的判断，是哪一年得出来的", "a": "奔跑的太阳", "av": "https://cos-cloud.aipoju.com/avatar/2c8570b1e7e40bb5b5100a9c2013da7a.png", "d": "2026-11-14", "L": 21, "C": 4, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/45548254242181258", "s": "", "id": "45548254242181258"}, {"t": "【llama.cpp 1.0 发布：你自己的手机和电脑，现在能免费用上大模型了】", "a": "智井AI", "av": "https://cos-cloud.aipoju.com/avatar/e83db6e46a861cebb90d7d6054a62907.png", "d": "2026-11-14", "L": 8, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452424811124", "s": "发生了什么： Hugging Face 的 CEO 和 llama.cpp 的作者一起宣布，这个最常用的本地跑大模型工具终于推出了第一个完全稳定版 v1.0.0。它能在你的手机、笔记本…", "id": "55521452424811124"}, {"t": "当年求职，我连 PPT 都不会做；这次试到第八份样稿，终于有了回应", "a": "风中百合", "av": "https://cos-cloud.aipoju.com/avatar/6da7c222ba580cd2fb5e4733dcba1752.png", "d": "2026-11-14", "L": 24, "C": 4, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452424418214", "s": "大家好，我是风中百合。 今年刚开始看到破局时，我觉得那是个“高端局”，普通人好像只能在旁边看看。那时我连 AI 都只是当成一个高级点的百度；工作里做过 PPT，但说到排版、选页面、给客…", "id": "55521452424418214"}, {"t": "Claude门户认证最新一手经验：", "a": "青青实操育儿", "av": "https://cos-cloud.aipoju.com/avatar/166bf0f3e5a05c387e18245765faa3c9.png", "d": "2026-11-14", "L": 15, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142121455452", "s": "1.跳门户验证不要点进去，尽量不动，不要选国家。 2.如果发现已经选过其他地区，选不了其他的话，可以随便上传一张照片，然后自己认证一下。显示失败之后，可以重新提交地区。 3.现在通过率…", "id": "14425142121455452"}, {"t": "火柴人视频火了：5段提示词0元，用WorkBuddy跑出3条成片", "a": "小虎AI", "av": "https://cos-cloud.aipoju.com/avatar/119f7000f099483a786421e78a4574ee.png", "d": "2026-11-14", "L": 20, "C": 5, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142121452422", "s": "大家好，我是小虎。 一个开源技能装进 WorkBuddy，发 5 句话，从装技能、出导演提案、写三段提示词，到本机渲染出片，我完整跑了一遍。零成本，素材全程不离开自己的电脑。最后拿到 …", "id": "14425142121452422"}, {"t": "Orilo：Personal Agent 赛道的新选手，主打纯语音交互", "a": "阿星", "av": "https://cos-cloud.aipoju.com/avatar/9ce47f67b90a5e85892ee13806484cfa.png", "d": "2026-11-14", "L": 8, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142121425522", "s": "官网：Orilo - Your Personal Voice Agent 一款语音版的 Personal Agent 产品发布。 Orilo 是一款 Voice-first Perso…", "id": "14425142121425522"}, {"t": "43 页合集翻不动？我做成 Skill还上了商城，现把沿途10 个坑都列给你", "a": "遇见", "av": "https://cos-cloud.aipoju.com/avatar/906f4794dbccef6a67a1436e22f8daac.png", "d": "2026-11-14", "L": 19, "C": 7, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/14425142121282242", "s": "", "id": "14425142121282242"}, {"t": "豆包工作完成产品更新，新增多模型选择与消耗计价机制", "a": "诸葛宁", "av": "https://cos-cloud.aipoju.com/avatar/99061aea5944338447179a1f08f704c4.png", "d": "2026-11-14", "L": 9, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425452481511", "s": "11月12日，豆包宣布豆包工作完成新一轮产品更新，拓展更多可调用模型，同步引入按实际消耗计价的额度调节机制，给用户提供更加灵活的AI使用方案。 本次更新之前，豆包工作仅提供豆包2.1 …", "id": "22258425452481511"}, {"t": "第一单改到凌晨五点，最后还是退了单：一个二胎妈妈的 PPT 接单复盘", "a": "豆丫", "av": "https://cos-cloud.aipoju.com/avatar/b26248c6ab798bd8b56ad9a36260782b.png", "d": "2026-11-14", "L": 34, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142124424452", "s": "大家好，我是豆丫，一个白天上班、晚上还要照顾两个孩子的妈妈。 参加了两期的 AI PPT 行动营，交付完成了 13 单，还有 3 单正在进行中，累计变现 606 元。成绩不算突出，但这…", "id": "14425142124424452"}, {"t": "从一件小事开始，让 AI 真正用起来——11 月 14 日线下实操沙龙复盘", "a": "赵丽（沉淀中）", "av": "https://cos-cloud.aipoju.com/avatar/e066a92ce3678d1d3e29a023df8199e6.png", "d": "2026-11-14", "L": 7, "C": 5, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452422548254", "s": "这次线下实操结束后，最让我有感触的，是不少朋友已经第二次来参加我们的活动。有人带着上一周使用 AI 时遇到的问题回来，也有第一次接触智能体的新朋友。看到大家愿意继续来、继续尝试，我更加…", "id": "55521452422548254"}, {"t": "从\"屡战屡败\"到\"敢于实操\"：一个中年老白的 AI 复盘", "a": "Tony_Tang", "av": "https://cos-cloud.aipoju.com/avatars/1fe5e23ce23917963780ddc8ed746a05_1794359402550.jpg", "d": "2026-11-14", "L": 30, "C": 5, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/14425142122288822", "s": "以下是飞书链接，分享给各位", "id": "14425142122288822"}, {"t": "破局周边许愿池#破局说说# · 作品详情 · 破局周边许愿池", "a": "声而不凡", "av": "https://cos-cloud.aipoju.com/avatar/898bb0cb8f6df9623cc7036c85bbfac3.png", "d": "2026-11-14", "L": 6, "C": 3, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142488841812", "s": "作品详情 · 破局周边许愿池", "id": "14425142488841812"}, {"t": "AI学习助手实战连载（四）：Agent 搭好了，接下来怎么\"养\"出孩子的学习力？", "a": "金帅", "av": "https://cos-cloud.aipoju.com/avatar/57cf308c0457aa3aca7a5e6f90d285ba.png", "d": "2026-11-14", "L": 8, "C": 5, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/55521452588451284", "s": "", "id": "55521452588451284"}, {"t": "https://my.feishu.cn/wiki/BBiFw24IIiySu5kBvuoc3BiZnn4?from=from_copylink", "a": "田老师", "av": "https://cos-cloud.aipoju.com/avatar/d94d6b3d130a337574e21400f5610d42.png", "d": "2026-11-14", "L": 7, "C": 6, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142488412142", "s": "", "id": "14425142488412142"}, {"t": "刷完官网 30 多篇 AI 短视频教程，我整理了一份能照着做的实操手册（即梦 / Seedance / WorkBuddy）", "a": "大海", "av": "https://cos-cloud.aipoju.com/avatar/750dfc278e341b1adce88bb82dfe4ed6.png", "d": "2026-11-14", "L": 9, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142488558512", "s": "写在前面 上一篇我写了 FDE 方法笔记，有圈友问：具体怎么把 AI 短视频做出来？这次就换个更实在的题目。 我用破局 CLI 把官网刷了两轮，16 个关键词，去重后近 300 条主题…", "id": "14425142488558512"}, {"t": "第一次在公众号图书带货,当天成交两单", "a": "大风歌", "av": "https://cos-cloud.aipoju.com/avatar/8d45baa3aa4a6acbf0eba7404dbe4404.png", "d": "2026-11-14", "L": 9, "C": 7, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/45548254511885448", "s": "", "id": "45548254511885448"}, {"t": "《持械入宋》爆火，我做了一集，并不是很难", "a": "悦来玩AI", "av": "https://cos-cloud.aipoju.com/avatar/d7efbfbd18b84cca52ef30ca9a4091c0.png", "d": "2026-11-14", "L": 29, "C": 9, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/82258425211545152", "s": "", "id": "82258425211545152"}, {"t": "给AI立了7条”不准”，它才终于像我：3步做出自己的风格卡（附3段可复制提示词）", "a": "圈", "av": "https://cos-cloud.aipoju.com/avatar/14f7404235a4f4df06c3f81e247e1c9b.png", "d": "2026-11-14", "L": 29, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142481884182", "s": "大家好，我是圈姐，做了10年心理咨询，公众号的文章一直是自己写。 这篇只讲一件事：怎么让AI写出”我的味道”。 三步，不用写代码。文末附3段可以原样复制的提示词。 【一】先看效果，再讲…", "id": "14425142481884182"}, {"t": "https://pcn223ryiy8z.feishu.cn/wiki/BbXTwetZcifNvjk320xc9IkQnwe", "a": "想去吹吹风", "av": "https://cos-cloud.aipoju.com/avatar/adcc2f1199c455295239b71032edce50.png", "d": "2026-11-14", "L": 10, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425214115212", "s": "", "id": "82258425214115212"}, {"t": "绝大多数独立开发者还在死磕 Steam 和 App Store，交着上架费、卷生卷死却无人问津。", "a": "刘同学", "av": "https://cos-cloud.aipoju.com/avatar/1bcc2447e3b0809283c577ea69fe3b37.png", "d": "2026-11-14", "L": 14, "C": 7, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452584841514", "s": "但海外一帮聪明人正在闷声发财：用 AI 配合轻量级引擎做网页小游戏（Web Games），零买量成本直接触达几百万玩家。 一位 5 年老手 Anoool他直接晒出了 13 个躺赚分发平…", "id": "55521452584841514"}, {"t": "https://my.feishu.cn/wiki/PobkwuWRWiFkVVk1VpvcHHThn3S?from=from_copylink", "a": "胡晓霞", "av": "https://cos-cloud.aipoju.com/avatar/8039918f6a8e0a20e8e60e9300e6373f.png", "d": "2026-11-14", "L": 10, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142481842512", "s": "", "id": "14425142481842512"}, {"t": "5 条写作规则、4 条发布标准，我把创作经验变成自己的工作方法", "a": "一只阿木木", "av": "https://cos-cloud.aipoju.com/avatar/7bfe9d66f5e3405d8d6615493687db2c.png", "d": "2026-11-14", "L": 24, "C": 9, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/22258425214442541", "s": "", "id": "22258425214442541"}, {"t": "#AI风向标# Data2Dao 是一款把“健康数据”和“修仙游戏”结合起来的 App，核心玩法是让用户的睡眠、心率和运动数据变成“灵气”与“心魔”，日常拉伸和锻炼则变成与妖怪的战斗。", "a": "米芽", "av": "https://cos-cloud.aipoju.com/avatar/2fdcf59d6f7e945cb1ee75cfc10e21cc.png", "d": "2026-11-14", "L": 14, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/45548254512288558", "s": "核心逻辑 它切中的痛点是“知道该运动，但坚持不下去”。Data2Dao 用游戏化的即时反馈替代了健身 App 的枯燥数据：手机前置摄像头识别用户的拉伸、深蹲动作，每完成一次就攻击怪物一…", "id": "45548254512288558"}, {"t": "#AI风向标# Dalet Labs 由前 Runway 研究员 Omer Bar-Tal 于 2025 年创立，已获 700 万美元种子前融资（Lightspeed 领投，SV An…", "a": "米芽", "av": "https://cos-cloud.aipoju.com/avatar/2fdcf59d6f7e945cb1ee75cfc10e21cc.png", "d": "2026-11-14", "L": 13, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142481124142", "s": "它的核心产品叫 Scene，是一个 iOS 购物 App。和传统电商搜索不同，Scene 让你像刷 TikTok 或 Pinterest 一样，滑动浏览 AI 生成的图片信息流。图片里…", "id": "14425142481124142"}, {"t": "#AI风向标# 30人团队做《Brain Puzzle 3》全球下载6019万，美iOS免费榜最高TOP8。", "a": "米芽", "av": "https://cos-cloud.aipoju.com/avatar/2fdcf59d6f7e945cb1ee75cfc10e21cc.png", "d": "2026-11-14", "L": 13, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142481122442", "s": "产品是纯IAA脑洞解谜，反常识找物+拖拽道具。 卡关看广告拿提示，广告即变现。 素材用TikTok投录屏，抓马冲突切片，单素材曝光破200万。 值得学的点：让内容生产来自产品本身。", "id": "14425142481122442"}, {"t": "国庆突击三天，我不写代码，是怎么让 AI 把一个网站做出来的", "a": "东方林", "av": "https://cos-cloud.aipoju.com/avatar/1bfc9ddbeef71d21cf6b354a3eaa3063.png", "d": "2026-11-14", "L": 23, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425214522512", "s": "——一个非程序员的全过程交付记录，附一套可以照抄做网站的“七步流程” 详细的全流程复盘，请移步到飞书文档链接 🔗 ： （文章末尾有我 互联网老兵的 \"网站建设十大步骤\" 干货分享！） …", "id": "82258425214522512"}, {"t": "AI公众号稳定月入变现10万+，从选题到接商单的万字实操教程", "a": "西堂AI视频", "av": "https://cos-cloud.aipoju.com/avatar/8b1d94efee03e503252c6aff32964be5.png", "d": "2026-11-14", "L": 30, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425214528111", "s": "大家好，我是西堂。 先感谢破局、洋哥和一路上帮助过我们的行动家们。从最早做项目，到认识一起创业的伙伴，西羊石的成长离不开大家的帮助。 之前在破局分享过从副业到创业的经历，也聊过公众号业…", "id": "22258425214528111"}, {"t": "用WorkBuddy设计网站：我把读过的书变成了一个历史小馆", "a": "李清圆", "av": "https://cos-cloud.aipoju.com/avatar/706d36670a6ed66d2524a5fb6ee42567.png", "d": "2026-11-14", "L": 23, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142481242512", "s": "大家好，我是李清圆。 最近使用WorkBuddy做了一个个人网站，这里分享我的实战步骤和做产品的心得。 通过这次实操，我明白了工具抹平了\"能不能做\"的门槛，但\"做成什么样\"还在我们自己…", "id": "14425142481242512"}, {"t": "我用 workbuddy 发布第一篇公众号文章，复盘 5 个关键动作", "a": "serena", "av": "https://cos-cloud.aipoju.com/avatars/8eb8e6f5158665a86b06815217e34573_1792678211396.jpg", "d": "2026-11-14", "L": 19, "C": 9, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/55521452581142584", "s": "", "id": "55521452581142584"}, {"t": "Claude KYC 成品号供应：Claude成品号， 已经过了 KYC 的免费账号、Pro、Max、Ultra 都有供应。", "a": "浪迹", "av": "https://cos-cloud.aipoju.com/avatar/5051d03f4dbf724c4ec37fde1aa50202.png", "d": "2026-11-14", "L": 11, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142482855822", "s": "如果有圈友 Claude 弹 KYC 验证，可以找我对接#资源对接# #问答求助#", "id": "14425142482855822"}, {"t": "从脱离职场6年、六年不碰电脑，到从零学会AI做康养内容｜我的破局成长复盘", "a": "周", "av": "https://cos-cloud.aipoju.com/avatar/ea35a42d58573c4883e96ff5efdae738.png", "d": "2026-11-14", "L": 21, "C": 12, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142482185282", "s": "大家好，我是阿芳（芊锦），今年 35 岁。 我从 2021 年结婚之后，就彻底脱离职场，整整6 年没有上班、几乎不碰电脑。六年全职宝妈的生活，让我慢慢和社会脱节，每天只有孩子、家务、家…", "id": "14425142482185282"}, {"t": "我是做货架电商，求大家推荐下自己用着稳定的双开桌面工具，要支持双鼠标独立操作、不触发关联的。[合十]", "a": "武蒙", "av": "https://cos-cloud.aipoju.com/avatar/3065d5bd0f039f4699d17c38c5231af4.png", "d": "2026-11-14", "L": 11, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425215442182", "s": "", "id": "82258425215442182"}, {"t": "AI 流水线今天拦了一篇稿：指令要发的题，上周日刚发过", "a": "王中阳讲AI", "av": "https://cos-cloud.aipoju.com/avatar/edc6e215fac918cfb28054ee38d03bd9.png", "d": "2026-11-14", "L": 12, "C": 11, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/82258425215282242", "s": "", "id": "82258425215282242"}, {"t": "成本 2 毛 5 一首，接单卖 20 元：AI 写歌的 80 倍差价不在歌里", "a": "云帆", "av": "https://cos-cloud.aipoju.com/avatar/9200bde573955ab4b77da3da724aee7b.png", "d": "2026-11-14", "L": 15, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142482545452", "s": "11 月 13 日，阿里把快乐虾米（HappyShrimp）推上 iOS 和安卓商店。定位很直白：写歌工具。描述一句情绪、扔一段和家人的聊天记录，它就能出词、曲、编曲和人声。同一天界面…", "id": "14425142482545452"}, {"t": "从烘焙裱花到试做 PPT：四次没中稿，我还是走进了客户群", "a": "星凌", "av": "https://cos-cloud.aipoju.com/avatar/5e1f0ff111ac2a14ce424896fbf104cb.png", "d": "2026-11-14", "L": 27, "C": 11, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425215555851", "s": "四次竞稿，全部没中；后来接了3单，收入200元。 这是我参加本期 AI PPT 行动营交出的成绩单。钱不多，过程也不是一帆风顺，但对一个刚开始学做 PPT 的人来说，这几次真实的接单经…", "id": "22258425215555851"}, {"t": "从零写出一集让人上头的 AI 韩剧，即梦短剧工作室把做短剧的门槛打下来了！", "a": "西堂AI视频", "av": "https://cos-cloud.aipoju.com/avatar/8b1d94efee03e503252c6aff32964be5.png", "d": "2026-11-14", "L": 29, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425241152582", "s": "想做一集让人愿意追下去的 AI 短剧，先把人物关系写顺，比直接堆漂亮镜头更有用。 我们团队这次从一组反差人设开始：重庆女生误把财阀继承人当成柔弱同学，执意罩着他，男主顺势装乖。用即梦短…", "id": "82258425241152582"}, {"t": "#AI风向标# 腾讯混元发布 Hy Realtime，元宝语音通话可以点歌、联网搜索", "a": "阿海", "av": "https://cos-cloud.aipoju.com/avatar/e4fb2bb615bd025b8d5f8a071ad9fc90.png", "d": "2026-11-14", "L": 13, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452548548444", "s": "腾讯混元 11 月 13 日发布实时语音模型 Hy Realtime，已接入元宝语音通话和腾讯客服。更新到最新版元宝后，可在语音通话中选择「初语」音色体验。腾讯云计划近期开放 API。…", "id": "55521452548548444"}, {"t": "#AI风向标# · 🧭 DeepSeek 把整个 App 拆成 API：调几个参数，你也能 1:1 复刻一个 AI 助手", "a": "梓惠", "av": "https://cos-cloud.aipoju.com/avatar/725e0de56fe51d30d3ec52549f0bae31.png", "d": "2026-11-14", "L": 12, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425241282841", "s": "🧭 DeepSeek 把整个 App 拆成 API：调几个参数，你也能 1:1 复刻一个 AI 助手 11月13日晚，DeepSeek 把自家 App 和网页端的全套对话能力，整体开放…", "id": "22258425241282841"}, {"t": "#AI风向标# 千亿参数的大模型，第一次能塞进你的笔记本电脑——而且免费、开源、断网可用", "a": "汉堡侠", "av": "https://cos-cloud.aipoju.com/avatar/909d0903122a524003f4e272a7328d0c.png", "d": "2026-11-14", "L": 13, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142418454242", "s": "发生了什么 11-12 无界方舟（Edge0-AI）开源 Edge0-145B 与 120B，主打\"端侧原生\"：145B 总参数里每次只激活约 10B，靠 SSD 三级存储 + CPU…", "id": "14425142418454242"}, {"t": "一行代码没写，国庆3天我让AI做2个网站（全流程复盘）", "a": "东方林", "av": "https://cos-cloud.aipoju.com/avatar/1bfc9ddbeef71d21cf6b354a3eaa3063.png", "d": "2026-11-14", "L": 16, "C": 9, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/82258425244141452", "s": "", "id": "82258425244141452"}, {"t": "（无标题主题）", "a": "方力，科润教育", "av": "", "d": "2026-11-14", "L": 13, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425244141851", "s": "", "id": "22258425244141851"}, {"t": "应往届大学生培训就业，上班后还款", "a": "方力，科润教育", "av": "", "d": "2026-11-14", "L": 13, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425244121482", "s": "", "id": "82258425244121482"}, {"t": "\"读懂中国文化·五蕴皆空与故事的切片【日课】052\"", "a": "三元色", "av": "https://cos-cloud.aipoju.com/avatar/6594f38d906f62c50ee20161b898c328.png", "d": "2026-11-14", "L": 15, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425248145282", "s": "今天是一个想法 今天是个很有意思的想法。想法只是一种设想，它是一种对世界观的构建。 那么是什么想法呢？最近一段时间我发现，无论是文字、音频、视频还是空间，都有从时间和空间上的演化。空间…", "id": "82258425248145282"}, {"t": "#AI风向标# 李飞飞创办的 World Labs 正式开放世界模型 Atlas", "a": "阿海", "av": "https://cos-cloud.aipoju.com/avatar/e4fb2bb615bd025b8d5f8a071ad9fc90.png", "d": "2026-11-14", "L": 15, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425248152242", "s": "李飞飞的 Atlas 世界模型已经开放，新用户注册送 10000 积分。它最大的突破是能把图片或草图变成能走进去的 3D 场景。 核心玩法：Viewfinder 负责把照片扩展成 3D…", "id": "82258425248152242"}, {"t": "#AI风向标# 梁圣再放大招：人人都能手搓DeepSeek App了", "a": "阿海", "av": "https://cos-cloud.aipoju.com/avatar/e4fb2bb615bd025b8d5f8a071ad9fc90.png", "d": "2026-11-14", "L": 14, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425248414241", "s": "11月13日消息，DeepSeek正式开放全家桶应用API，将DeepSeek App中的联网搜索、深度思考搜索、文件输入、链接阅读等能力整合进原有API，开发者只需开启对应参数，即可…", "id": "22258425248414241"}, {"t": "好选题从哪里来？我给自己一个 60 分钟的选题实验", "a": "一只阿木木", "av": "https://cos-cloud.aipoju.com/avatar/7bfe9d66f5e3405d8d6615493687db2c.png", "d": "2026-11-14", "L": 24, "C": 9, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/82258425248414882", "s": "", "id": "82258425248414882"}, {"t": "我把五家 AI 工具的「并行」拆开看了，它们并的根本不是一回事", "a": "张大胡子", "av": "https://cos-cloud.aipoju.com/avatar/d19caa08e168a37cfc44901d386a0c06.png", "d": "2026-11-14", "L": 21, "C": 23, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425248414542", "s": "我是破局的张大胡子。早些年搞了十几年网站建设和主机运维，如今失业已久，现在的身份是「被 AI 惯坏的失业老汉」。 先花二十秒对齐预期，免得您读到最后货不对板。这篇不是工具推荐榜，也不是…", "id": "82258425248414542"}, {"t": "#AI风向标# 豆包工作接第三方模型：Kimi K3.1 Pro等外部模型进办公智能体", "a": "向好", "av": "https://cos-cloud.aipoju.com/avatar/7ba396c7bea49f0153667cc95388bb2b.png", "d": "2026-11-13", "L": 12, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452541222184", "s": "豆包工作确实在 2026 年 11 月 12 日完成更新，正式接入了 Kimi K3.1 Pro、GLM 5.3、DeepSeek V4.1 Flash 等多款第三方模型。 📌 核心细…", "id": "55521452541222184"}, {"t": "#AI风向标# · DeepSeek把“App级能力”打包成API了：联网搜索、深度思考、读文件、抓链接、OCR/ASR/TTS语音全套开放，开启参数就能用，还能1:1复刻DeepSe…", "a": "阿牛", "av": "https://cos-cloud.aipoju.com/avatar/e65a641684315ab7b8d556d7d5eb6af1.png", "d": "2026-11-13", "L": 11, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142412415242", "s": "DeepSeek把“App级能力”打包成API了：联网搜索、深度思考、读文件、抓链接、OCR/ASR/TTS语音全套开放，开启参数就能用，还能1:1复刻DeepSeek App。 这对…", "id": "14425142412415242"}, {"t": "60 后死磕 AI 的一次震撼经历：技术老师远程 3 小时没搞定，我用 15 小时把 Obsidian 接上了 Codex", "a": "阳光英紫", "av": "https://cos-cloud.aipoju.com/avatar/9ad99e2b68cd83afcb6d9ce7138b9cf0.png", "d": "2026-11-13", "L": 24, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425245815442", "s": "我是 60 后，学医出身，做了三十五年医疗和康养。命令行、环境变量、API 这些词，原来对我就像另一国语言。今年 6 月，我想在自己用了很多年的笔记软件里，直接叫 AI 帮我读资料、整…", "id": "82258425245815442"}, {"t": "《信号站》04：没有剧方资源，普通人怎么借AI做短剧挂载获取广告收益。", "a": "是苗苗呀", "av": "https://cos-cloud.aipoju.com/avatar/24e87226f9b682e6502f2bb76ca316a6.png", "d": "2026-11-13", "L": 44, "C": 12, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425245525141", "s": "Hi各位，我是破局首席内容官苗苗，《信号站》第4期来了。 这期我们拆解@-王拾柒的AI跑出来的副业机会｜短剧挂载项目实操复盘。他做过视频号带货，这次通过老学员接入短剧推广，用AI减轻重…", "id": "22258425245525141"}, {"t": "把 20 美元/月拆成 10 美元/周：单价砍半，客单价涨 78%", "a": "云帆", "av": "https://cos-cloud.aipoju.com/avatar/9200bde573955ab4b77da3da724aee7b.png", "d": "2026-11-13", "L": 12, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425245584842", "s": "一个越南的 25 岁工程师，一个人、零员工，做了个 AI 学习 App：上课把手机往桌上一放录音，下课打开，分层笔记、思维导图、20 道自测题已经摆好。37 万人用过，现在月收 19,…", "id": "82258425245584842"}, {"t": "从零开始做 AI 带货视频，到搭建自己的视频制作工作台", "a": "Elsa Wang", "av": "https://cos-cloud.aipoju.com/avatar/400a96eae23202ffac9b896131be237f.png", "d": "2026-11-13", "L": 27, "C": 12, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452558454514", "s": "我的工作是AI相关的研发，在AI技术和应用落地方面会琢磨得深一些。但在参加 AI 全域带货行动营之前，我完全没有做过 AI 视频带货，也不了解这套业务具体是怎么运转的。 这次AI全域带…", "id": "55521452558454514"}, {"t": "#AI风向标# LibTV 全球首发了 Seedance 2.5 Flash ！", "a": "阿海", "av": "https://cos-cloud.aipoju.com/avatar/e4fb2bb615bd025b8d5f8a071ad9fc90.png", "d": "2026-11-13", "L": 12, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425222118522", "s": "面向所有用户开放。它沿用了 Seedance 2.5 的核心交互，主打更快生成、更低成本。 这次双十一活动期间，在官网的模型入口还有“限时6折”的超级优惠活动： LibTV 公布的 S…", "id": "82258425222118522"}, {"t": "🔥「预备星推官」招募｜第一次推广破局，我们带你一起跑", "a": "晓君@AI破局", "av": "https://cos-cloud.aipoju.com/avatar/6fc8c29cb93ea02b6f1613e69e3433ba.png", "d": "2026-11-13", "L": 75, "C": 20, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/82258425222428882", "s": "各位圈友，我是晓君～ 前两天，我们发布了「双11·双12 年终感恩回馈季」活动：新朋友加入可以领500元优惠券，老朋友成功推荐，可以拿到最高35%感恩金，还有护颈枕、破局卫衣、「洋哥小…", "id": "82258425222428882"}, {"t": "大家晚上好呀，我是夏雨～ · 又到周五了，这周的周报也准时送到。", "a": "竹子助理(10:00-20:00)", "av": "https://cos-cloud.aipoju.com/avatar/552dd654539e12b7ba1f64ded2e7317a.png", "d": "2026-11-13", "L": 36, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452555418884", "s": "又到周五了，这周的周报也准时送到。 这周事情不少：洋哥的年度分享定档 11 月 27 日，两个新的服务口子打开，年终回馈也开始了，大家留意一下哦～📌 本周总计 4 件重要的事情： 1、…", "id": "55521452555418884"}, {"t": "大家好，我是有滋有味，AI PPT 实战营的学员。", "a": "有滋    有味", "av": "https://cos-cloud.aipoju.com/avatar/74ac270970b363d3df669b190f63e59f.png", "d": "2026-11-13", "L": 24, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/45548254555588458", "s": "我从去年年底加入破局以来，已经陆陆续续参加了7、8训练营，尝试过包括ai生图、全域带货、ai编程出海等等各类方向，但从没有完成过一次变现。 破局里面是到处是金矿，但我却从来没有成功从上…", "id": "45548254555588458"}, {"t": "企业智能体采纳率一年翻倍到 40.3%，“数字员工”正式上岗了——但 88% 的企业接了智能体，只有 24% 真正赚到了钱。", "a": "启点", "av": "https://cos-cloud.aipoju.com/avatar/f99ae02fffff772956a4a1b397c68ace.png", "d": "2026-11-13", "L": 14, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425222818512", "s": "发生了什么：新华社 2026 年 11 月 12 日电，我国企业智能体采纳率已从 2024 年底的 17.3%，快速攀升至 2026 年上半年的 40.3%。中兴通讯南京基地已有 80…", "id": "82258425222818512"}, {"t": "#AI风向标# · ElevenLabs推出Scribe v3，支持102种语言实时语音转写", "a": "一夜一光", "av": "https://cos-cloud.aipoju.com/avatar/28dfd7822a80b9bdf1480c30717afc2f.png", "d": "2026-11-13", "L": 13, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425222815242", "s": "ElevenLabs推出Scribe v3，支持102种语言实时语音转写 ElevenLabs 发布新一代语音转写模型 Scribe v3 和 Scribe v3Live，前者面向已经…", "id": "82258425222815242"}, {"t": "#AI风向标# · 阿里上线快乐虾米App，端到端生成整首AI音乐", "a": "一夜一光", "av": "https://cos-cloud.aipoju.com/avatar/28dfd7822a80b9bdf1480c30717afc2f.png", "d": "2026-11-13", "L": 13, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425222815852", "s": "阿里上线快乐虾米App，端到端生成整首AI音乐 阿里旗下 AI 音乐创作平台快乐虾米（HappyShrimp）正式上线 iOS 和安卓客户端，App Store 版本更新至 0.2.1…", "id": "82258425222815852"}, {"t": "正规人社部国网考试流程： · 企业​人力资源管理师/无人机驾驶员/品酒师/白酒酿酒师/物业管理师/劳动关系协调员师/养老护理员/老年人能力评估师/电工/焊工/汽修工/公共营养师/健康管…", "a": "孟繁国", "av": "https://cos-cloud.aipoju.com/avatar/3f6382fea02dd67f10026b831889b9e3.png", "d": "2026-11-13", "L": 13, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/45548254555422188", "s": "企业​人力资源管理师/无人机驾驶员/品酒师/白酒酿酒师/物业管理师/劳动关系协调员师/养老护理员/老年人能力评估师/电工/焊工/汽修工/公共营养师/健康管理师/美容师/育婴员/保育师/…", "id": "45548254555422188"}, {"t": "base杭州余杭，寻求AI课程开发同学，有劳各位大佬们推荐下，资源多多（真多）目前单子都已接到#资源对接#", "a": "℡街道要饭职业户", "av": "https://cos-cloud.aipoju.com/avatar/feceea1a1a7550745d02cf446522631c.png", "d": "2026-11-13", "L": 13, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425228181441", "s": "", "id": "22258425228181441"}, {"t": "腾讯混元发布实时语音模型 Hy Realtime：能说会唱、还能调用工具，已在元宝语音通话、腾讯客服等上线", "a": "宁不吃香菜", "av": "https://cos-cloud.aipoju.com/avatar/e7980cdfd7ad32cb1d5b8f122f67d8e4.png", "d": "2026-11-13", "L": 14, "C": 11, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/45548254558188118", "s": "腾讯混元今日发布全新实时语音模型 Hy Realtime。该模型在语音理解、指令遵循、拟人化表达等基础对话能力上有优异表现，同时新增 Agentic 工具调用与唱歌能力。 Hy Rea…", "id": "45548254558188118"}, {"t": "#破局说说# 作品详情 · 破局周边许愿池", "a": "声而不凡", "av": "https://cos-cloud.aipoju.com/avatar/898bb0cb8f6df9623cc7036c85bbfac3.png", "d": "2026-11-13", "L": 14, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425228825482", "s": "", "id": "82258425228825482"}, {"t": "相册整理APP上架一年，营收为0。我原来做错了3件事。", "a": "林旬", "av": "https://cos-cloud.aipoju.com/avatar/5b26c502d2d0e7fafe73324440557031.png", "d": "2026-11-13", "L": 32, "C": 12, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/14425142445218142", "s": "", "id": "14425142445218142"}, {"t": "做了 9 年物流，我给 18 人的公司搭系统，最后只交了三张表", "a": "张云秋", "av": "https://cos-cloud.aipoju.com/avatar/75910e504180eb159d6cba1833348ead.png", "d": "2026-11-13", "L": 13, "C": 13, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425228525242", "s": "我是云秋，在三方物流干了九年。前五年跑车，后四年帮中小物流公司搭内部系统。 去年十一月一个半夜，老板老王在群里 @ 所有人，问 3 月那票发 B 地的回单谁拍了。货主说没签，要扣四千。…", "id": "82258425228525242"}, {"t": "开源又出王炸！MiniMax H3-Image 首发实测：4K 直出超能打（附全套提示词）", "a": "西堂AI视频", "av": "https://cos-cloud.aipoju.com/avatar/8b1d94efee03e503252c6aff32964be5.png", "d": "2026-11-13", "L": 24, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/55521452552812484", "s": "这次我试了 MiniMax H3-Image，4K 出图确实快，写实画风也挺合我口味。论文配图、知识图解和多角色同框都试了一轮，效果放在文里了。 我把每组图用到的完整提示词也一起放上了…", "id": "55521452552812484"}, {"t": "AI破局俱乐部2026年11月12日晚深圳局成功组局", "a": "Carl", "av": "https://cos-cloud.aipoju.com/avatar/694a8a360d2070265af09e09de4a4a59.png", "d": "2026-11-13", "L": 13, "C": 9, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/14425142442184252", "s": "", "id": "14425142442184252"}, {"t": "🎣 【破局周边许愿池】｜2027年你希望收到什么破局礼物？", "a": "竹子助理(10:00-20:00)", "av": "https://cos-cloud.aipoju.com/avatar/552dd654539e12b7ba1f64ded2e7317a.png", "d": "2026-11-13", "L": 54, "C": 16, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/45548254554514128", "s": "大家好，我是夏雨。 先问大家一个认真的问题：2027年，你希望从破局收到的周边是____？ 帆布袋？保温杯？帽子？还是春节红包封面？ 以前每次准备周边，我们都要琢磨好久。想挑点新鲜的、…", "id": "45548254554514128"}, {"t": "逆向自研软件自查：扒出 178 个通道后，我反而放心了", "a": "孟健AI编程", "av": "https://cos-cloud.aipoju.com/avatar/1a76e247d13d30068ad409f38f7cfb1e.png", "d": "2026-11-13", "L": 35, "C": 10, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/45548254582221248", "s": "", "id": "45548254582221248"}, {"t": "#破局好事#", "a": "WKY", "av": "https://cos-cloud.aipoju.com/avatar/13b6a6c5232171f26d725328a952ef32.png", "d": "2026-11-13", "L": 15, "C": 10, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425284851112", "s": "", "id": "82258425284851112"}, {"t": "说件重要的事儿，破局涨价通知： · 12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-13", "L": 161, "C": 39, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258425282484541", "s": "12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。 先恭喜所有的早鸟们，大家是早鸟价中的早鸟价，已经把位置占住了，跟着直接升值了。 …", "id": "22258425282484541"}, {"t": "用了一个月 WorkBuddy，我没赚到钱，但我把干活的方式换了", "a": "维度哥", "av": "https://cos-cloud.aipoju.com/avatar/ddc6600e9f2246b1c651b8c2a333f6f3.png", "d": "2026-11-13", "L": 31, "C": 13, "tp": "长文章", "e": false, "u": "https://aipoju.com/topic-details/82258425288112282", "s": "", "id": "82258425288112282"}, {"t": "35岁，在乡镇卫生院工作又要带娃，我为什么还要从头学 AI?", "a": "莎", "av": "https://cos-cloud.aipoju.com/avatar/0bff4470881075b9365099d2f2a649a9.png", "d": "2026-11-13", "L": 27, "C": 13, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142455848212", "s": "一位乡镇卫生院医生的破局学习记录 第一单的接单和返工细节，我已经单独写过一篇复盘。 这一次，我想把时间往前拨一点，聊聊那之前的自己：35 岁，在乡镇卫生院工作、家里还有年幼孩子的我，为…", "id": "14425142455848212"}, {"t": "沉寂四年重新出发：从不敢竞稿到完成2单交付，我终于找回了一点底气。", "a": "云懒", "av": "https://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTJjrfmK81kdtkWVoKfLZ4KlWKqfU8rZSYbLflqGiaJ5Sa9mvY1mZRmNkECjZsdiaAOIqRoEM0osbIew/132", "d": "2026-11-13", "L": 27, "C": 12, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425288421222", "s": "大家好，我是云懒，破局AI PPT行动营的一名学员，也是一位刚开始重新学习、尝试接单的全职妈妈。 过去四年，我经历了三次怀孕失败，长期奔波在求医问药的路上，慢慢与外面的世界脱节。今年终…", "id": "82258425288421222"}, {"t": "洋哥年度分享来了！2027年，普通人还能抓住哪些AI机会", "a": "王庆｜破局实战官", "av": "https://cos-cloud.aipoju.com/avatar/d951944c27914f6249c68f386b5f80d5.png", "d": "2026-11-13", "L": 94, "C": 13, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258425288428211", "s": "上周洋哥在星球说在考虑要亲自带队开一个AI员工锻造营，把如何打造顶尖员工的思路和原理全流程教给大家，要是这条帖子点赞超过2000就立马开干我正在考虑是否历史性首次担任一... 结果前天…", "id": "22258425288428211"}, {"t": "精华帖终稿 · 精华帖终稿", "a": "喜东祥饺子-周爱清", "av": "https://cos-cloud.aipoju.com/avatar/2be6e2bd4b8279f194a5f91029a994fd.png", "d": "2026-11-13", "L": 22, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142455155522", "s": "精华帖终稿", "id": "14425142455155522"}, {"t": "没有团队、没有设备，零基础用豆包给娃制作AI动画片（附万用模板+保姆级教程）", "a": "AI Jackson", "av": "https://cos-cloud.aipoju.com/avatar/085f92ff95289845e59fcaea0d9ab0de.png", "d": "2026-11-13", "L": 28, "C": 12, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/82258425288455842", "s": "大家好，我是Jackson，主业AI产品经理。破局行动家、12期优秀教练。全网50w粉丝，专注AI工具测评 我家那个早产女儿已经快3岁了 家里的各种玩具也已经玩腻了 最近天天要拿我手机…", "id": "82258425288455842"}, {"t": "8 次试稿全落选，第 9 次终于中稿交付：一个做了十几年汇报的老培训师，重学 AI PPT 的补课实录。", "a": "善若水", "av": "https://cos-cloud.aipoju.com/avatar/c1289fb4065643a0ab2d93ef643a7768.png", "d": "2026-11-13", "L": 26, "C": 11, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142455484182", "s": "这期成绩单：预习稿 B 级、两份不合格、宫颈癌课件拿到良好评级；为了搞懂「可编辑」三个字，我把 20 页图片版课件一页页擦字、裁图、重建，花了 6 个多小时；试稿 9 次，样稿终于被客…", "id": "14425142455484182"}, {"t": "信息差！如果你不知道AI小程序做哪些有市场？可以先抄再超！[机智]", "a": "飞掌柜", "av": "https://cos-cloud.aipoju.com/avatar/549f07ba6bc44421987a62afa1f4d5dc.png", "d": "2026-11-13", "L": 17, "C": 9, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/14425142455455542", "s": "1、小红书官方vibecoding大赛获奖作品已正式公布，做小程序、AI产品的朋友，可以从官方获奖作品及评论区挖掘产品开发灵感，比如金奖、银奖的创作者，值得对标，小程序赛道本身就具备很…", "id": "14425142455455542"}, {"t": "需要Claudekyc 门户认证，欧洲和美区的，需要联系我。", "a": "青青实操育儿", "av": "https://cos-cloud.aipoju.com/avatar/166bf0f3e5a05c387e18245765faa3c9.png", "d": "2026-11-13", "L": 15, "C": 8, "tp": "普通主题", "e": false, "u": "https://aipoju.com/topic-details/22258425288251241", "s": "", "id": "22258425288251241"}], "elite": [{"t": "🔥「预备星推官」招募｜第一次推广破局，我们带你一起跑", "a": "晓君@AI破局", "av": "https://cos-cloud.aipoju.com/avatar/6fc8c29cb93ea02b6f1613e69e3433ba.png", "d": "2026-11-13", "L": 75, "C": 20, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/82258425222428882", "s": "各位圈友，我是晓君～ 前两天，我们发布了「双11·双12 年终感恩回馈季」活动：新朋友加入可以领500元优惠券，老朋友成功推荐，可以拿到最高35%感恩金，还有护颈枕、破局卫衣、「洋哥小…", "id": "82258425222428882"}, {"t": "说件重要的事儿，破局涨价通知： · 12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-13", "L": 161, "C": 39, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258425282484541", "s": "12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。 先恭喜所有的早鸟们，大家是早鸟价中的早鸟价，已经把位置占住了，跟着直接升值了。 …", "id": "22258425282484541"}, {"t": "洋哥年度分享来了！2027年，普通人还能抓住哪些AI机会", "a": "王庆｜破局实战官", "av": "https://cos-cloud.aipoju.com/avatar/d951944c27914f6249c68f386b5f80d5.png", "d": "2026-11-13", "L": 94, "C": 13, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258425288428211", "s": "上周洋哥在星球说在考虑要亲自带队开一个AI员工锻造营，把如何打造顶尖员工的思路和原理全流程教给大家，要是这条帖子点赞超过2000就立马开干我正在考虑是否历史性首次担任一... 结果前天…", "id": "22258425288428211"}, {"t": "AI洞察45：Skill和AI编程的组合拳正在颠覆传统行业分工，重构生产力，把细分生意重新做一遍，AI+行业颠覆的红利机会", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-11", "L": 233, "C": 31, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548288844882258", "s": "先说这篇的一句话重点：大家从今天起都要重视日常跟AI解决自己的业务过程，并沉淀成skill，如果这个skill非常好用，那么立即用AI编程把它做成产品，卖出去，解决一个行业的痛点，这么…", "id": "45548288844882258"}, {"t": "被裁程序员转行带货，8 个月 GMV 破百万", "a": "沐叶", "av": "https://cos-cloud.aipoju.com/avatar/06ed72dcb848f000df176fea4efa4ea8.png", "d": "2026-11-10", "L": 203, "C": 52, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/14425152828525152", "s": "", "id": "14425152828525152"}, {"t": "📢 【破局10月刊】改版发布｜从 66 页到 35 页", "a": "竹子助理(10:00-20:00)", "av": "https://cos-cloud.aipoju.com/avatar/552dd654539e12b7ba1f64ded2e7317a.png", "d": "2026-11-10", "L": 58, "C": 15, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258485445212481", "s": "大家好，我是夏雨。 破局10月刊发布了。 这一期，大家会发现月刊有些不一样。我们把月刊从66页精简到了35页，也重新整理了内容分类和阅读指引。 这次改版，我们最想帮大家解决三个问题。怎…", "id": "22258485445212481"}, {"t": "今天正式说我自己两个破局运营的小改变，也欢迎大家一起监督。", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-10", "L": 312, "C": 52, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425152148814812", "s": "1.开启“破局专属百问百答” 我最近思考了下，我身上最强的两个能力是：AI和商业。 我现在的企业咨询费用已经超过1小时10万，这是基于我过去10多年的商业能力积累，和在AI行业的影响力…", "id": "14425152148814812"}, {"t": "用WorkBuddy做完教师5大工作场景，我只花了一小时", "a": "微微辣", "av": "https://cos-cloud.aipoju.com/avatar/b0e0bb6f0c527df61759e0d5dee45c1a.png", "d": "2026-11-10", "L": 104, "C": 24, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/55521412548515584", "s": "最近看到了教育部的一则新闻 提出要推动人工智能深度融入教育教学，让AI能真正的帮助老师解决实际的问题。 但是看到这个消息之后，我突然间产生了一个疑问 老师们真的把AI应用到日常工作里面…", "id": "55521412548515584"}, {"t": "从一鱼两吃到两号两吃：小红书虚拟产品变现复盘：69粉新号，30天带来5785元", "a": "河浅", "av": "https://cos-cloud.aipoju.com/avatar/c061533c683792929a5af0ea4b2d0bb3.png", "d": "2026-11-09", "L": 64, "C": 22, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/82258485882812412", "s": "大家好，我是河浅，前天我发了一篇【月入2K到年营收5万：我一边带娃一边做小红书】的复盘帖子，收到了洋哥等一众大佬49次点赞，非常感谢大家的鼓励和支持🙏！ 我在7月的时候还发过一篇精华帖…", "id": "82258485882812412"}, {"t": "🔥「双11·双12 年终感恩回馈季」邀新有礼，续费有惠🎁", "a": "晓君@AI破局", "av": "https://cos-cloud.aipoju.com/avatar/6fc8c29cb93ea02b6f1613e69e3433ba.png", "d": "2026-11-09", "L": 153, "C": 29, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/55521412115252414", "s": "各位圈友，年底了，想先认真跟大家说一句：谢谢大家一年的陪伴。♥️ 破局走到今天，离不开大家一次次深度的参与、真实的分享和推荐。 你把朋友带到这里，我们就多了一份把内容和服务做好的责任。…", "id": "55521412115252414"}, {"t": "《破局社群公约》严禁以教练身份拉学员进私域营销", "a": "王庆｜破局实战官", "av": "https://cos-cloud.aipoju.com/avatar/d951944c27914f6249c68f386b5f80d5.png", "d": "2026-11-09", "L": 141, "C": 33, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258485888154211", "s": "近日，有圈友反馈，行动营结束后，有教练邀请学员进入个人私域群，并在群内开展营销。经核查，该行为未经破局官方授权，属于教练个人商业行为，违反《破局社群公约》。我们已对相关违规行为作出处理…", "id": "22258485888154211"}, {"t": "1 个月，多做 2w 的 GMV——破局 CLI 怎么赋能我的 AI 培训生意", "a": "小虎AI", "av": "https://cos-cloud.aipoju.com/avatar/119f7000f099483a786421e78a4574ee.png", "d": "2026-11-09", "L": 71, "C": 24, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425152284844282", "s": "大家好，我是小虎，70 后，青玥 AI 创始人，浙大计算机本硕，做了二十年 IT，去年 All in AI，定位 AI 培训加陪跑。 破局 CLI 9 月初内测开放后，我把它接进备课、…", "id": "14425152284844282"}, {"t": "参加两期AI带货营，拿到1万多的佣金，坚持是底线，选题才是变量", "a": "红樱桃1349", "av": "https://cos-cloud.aipoju.com/avatar/04329c478e4386a29d325eff6912b484.png", "d": "2026-11-09", "L": 48, "C": 19, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258485544145111", "s": "大家好，我是红樱桃1349，从第11期的AI带货行动营开始，两个月的时间，拿到了1万多的佣金，我一共做了三个账号，一个是老号，两个是新号，老号做了不到一个星期就废了，新号一个出单100…", "id": "22258485544145111"}, {"t": "大家好，我是王庆，破局行动负责人。最近一直在改新手营的直播课件，经过洋哥的指导后，并且已经正式交付过一场，获得不错的反馈，和大家分享下我的这次经历。", "a": "王庆", "av": "https://cos-cloud.aipoju.com/avatar/0de8e2991e20b71d1020af171952d14e.png", "d": "2026-11-08", "L": 141, "C": 31, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548284445544888", "s": "前几天的新手营复盘会，我被洋哥叼了一顿，满分100分，只给我打了10分。 说实话挺失落的，当晚也没怎么睡，一直在反思。 今天彻底想通了： 确实没有真正理解用户思维，也没有在每一次设计时…", "id": "45548284445544888"}, {"t": "AI 公众号商单必看：名称、标题、封面、内容、飞轮", "a": "小林", "av": "https://cos-cloud.aipoju.com/avatar/32127ed9a8813a6e13455e1de8f55b26.png", "d": "2026-11-08", "L": 165, "C": 36, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425128148842542", "s": "大家好，我是小林。 18 天累计发布了 23 篇文章，总阅读 25 万+，涨粉 3000+，单篇最高阅读 3万+，商单收入 2 万，金钱成本 1 万，人力成本就是我的时间投入了。 过去…", "id": "14425128148842542"}, {"t": "主业被夺、副业归零那年：40岁带娃大叔靠“待在场内”，从圈外小白到拿下万元FDE商单、站上教练台", "a": "凡人", "av": "https://cos-cloud.aipoju.com/avatar/467065c51829c708f9b705ec645ea02f.png", "d": "2026-11-08", "L": 68, "C": 40, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548241285521248", "s": "各位圈友好，我是凡人，破局星火师和行动家，40岁在职中年带娃大叔，持续深耕 FDE 企业服务赛道。 作为 14 期 AI 之心写作营罗麦子老师的学员，今天这篇，是我对自己在破局这两年半…", "id": "45548241285521248"}, {"t": "我正在考虑是否历史性首次担任一次破局行动的主教练。", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-07", "L": 1969, "C": 400, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258451452458281", "s": "说个之前说过的重要洞察：打造最顶尖的AI员工已经成为AI时代最重要的能力，没有之一：AI洞察38：AI时代的竞争正... 最近也有很多圈友问我怎么打造最顶尖的AI员工。 我先说说顶尖A…", "id": "22258451452458281"}, {"t": "广州破局大会复盘，六万字反思我的三年AI创业路", "a": "醒狮", "av": "https://cos-cloud.aipoju.com/avatar/91c5e52b0a9ca6d2a4aedd2f059d6904.png", "d": "2026-11-07", "L": 83, "C": 32, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/55521428544514244", "s": "", "id": "55521428544514244"}, {"t": "我是破局星球内容负责人，我来公布一个星球内容的最新公约！", "a": "是苗苗呀", "av": "https://cos-cloud.aipoju.com/avatar/24e87226f9b682e6502f2bb76ca316a6.png", "d": "2026-11-06", "L": 225, "C": 63, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548241558151818", "s": "Hi各位，我是破局的首席内容官苗苗。 最近我一直在忙破局公众号 MCN 项目。刚开始对接的时候，路人甲老师就明确了一个要求：我们这个公众号商单项目的文章，不允许使用AI生成。 一开始大…", "id": "45548241558151818"}, {"t": "作业不合格、八次竞稿没中，后来我中了十几单：我把踩过的每个坑，都做成了工具", "a": "比特", "av": "https://cos-cloud.aipoju.com/avatar/2660ff8dd1c19c170d7138ae2a38656e.png", "d": "2026-11-06", "L": 65, "C": 11, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548241581221858", "s": "大家好，我是比特，AI PPT 实战营的学员。 结营复盘时，观星老师说这一期大家平均竞稿 8 次才中 1 次。看到这个数我愣了一下：我刚拿到接单资格那段时间，正好连着投了八次，一次都没…", "id": "45548241581221858"}, {"t": "《22 天从 0 到上线收款：非程序员的小程序实战与 13 个避坑清单》", "a": "悦读者｜02", "av": "https://cos-cloud.aipoju.com/avatar/d505327f48484189ec0ddd11f75e74a0.png", "d": "2026-11-06", "L": 50, "C": 10, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/82258451858111252", "s": "各位破局圈友大家好，我是悦读者，破局行动家，AI工具实战派，AI知识资产化实战派。距离上次发帖一转眼又过去小半年的时间了，时间过得可真快呀 本文适合正在参加或准备参加 AI 编程训练营…", "id": "82258451858111252"}, {"t": "今年最后一期破局行动来了！13期破局行动教练、志愿者开启招募", "a": "王庆｜破局实战官", "av": "https://cos-cloud.aipoju.com/avatar/d951944c27914f6249c68f386b5f80d5.png", "d": "2026-11-06", "L": 150, "C": 26, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548241848224548", "s": "前两周发帖征集大家最想报名参加的项目，投票数量最高的几个项目，我们项目评审会评估后也基本都上了，最终确定了16个项目，满足大家的期待。 200多个项目经过6轮项目会的评审，今年最后一期…", "id": "45548241848224548"}, {"t": "AI 接单一个半月，稿费 1.4 万+ 心得", "a": "源", "av": "https://cos-cloud.aipoju.com/avatar/a29534b63f0beaa50c4dccd355d33dc1.png", "d": "2026-11-06", "L": 137, "C": 33, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425128525424842", "s": "大家好，我是源，02 年，送过外卖，AIPPT 行动营 12 期学员。 9 月 15 日起，我全职用 AI 接 PPT 和课件订单，到 11 月 4 日一个半月，接了 87 单，预计稿…", "id": "14425128525424842"}, {"t": "从1天1条到1小时1条：人物故事视频的字幕、配音、配图提效流程（附2个Skill）", "a": "三水", "av": "https://cos-cloud.aipoju.com/avatar/3bc94089f5cc97ec766dc45ae1fb1adf.png", "d": "2026-11-06", "L": 52, "C": 14, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/82258451545215512", "s": "大家好，我是三水。我的本职是在建筑公司做工程造价，平时要上班。参加这期AI全域带货行动之前，我连剪映都没用过，第一条人物故事视频几乎做了一天。 虽然课程和SOP都看了，但真正开始动手之…", "id": "82258451545215512"}, {"t": "20天发布50条、单条涨粉7000：我的AI短视频账号从0到万粉实战复盘", "a": "๑҉", "av": "https://cos-cloud.aipoju.com/avatar/7271bce26361f7d56181210d40523e9d.png", "d": "2026-11-05", "L": 56, "C": 8, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258454144441511", "s": "9月25日发布第一条视频，到10月19日，我的视频号人物故事赛道，粉丝突破1万。 这期间，我累计发布50条作品，单条视频最高涨粉约7000，播放量从早期的几百逐步提升到破万。熟练流程后…", "id": "22258454144441511"}, {"t": "第二场直播复盘｜7单｜洋哥直播稿+Grok换人生上下文，这套SOP直接抄", "a": "栋哥", "av": "https://cos-cloud.aipoju.com/avatar/4d8f2ef2061c37cbdcb18defa82209bd.png", "d": "2026-11-04", "L": 65, "C": 23, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/55521424518448214", "s": "", "id": "55521424518448214"}, {"t": "WorkBuddy「收入变现」，从 0 到 1 全路径实测复盘（保姆级详细教程）", "a": "天山", "av": "https://cos-cloud.aipoju.com/avatar/aec2a37e570e221534a7649e48908e39.png", "d": "2026-11-04", "L": 153, "C": 44, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/55521424252411154", "s": "", "id": "55521424252411154"}, {"t": "67岁零基础，21天全勤产出18条AI视频我是怎么做到的？", "a": "智慧姐", "av": "https://cos-cloud.aipoju.com/avatar/c1905b34e861dcabd445b7f88cef5170.png", "d": "2026-11-03", "L": 55, "C": 17, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425124844481552", "s": "一、先亮成绩单​ 12期\"AI全域系统带货\"行动营，21天，我交出的成绩单：​ ​ 🎯 21天硬核战绩单：​ • 全勤打卡：0缺勤，秒退399元押金。​ • 产能飞跃：从上一期的3天手…", "id": "14425124844481552"}, {"t": "🎁Yangclaw 2.0升级有奖征集｜你最希望AI洋哥增加什么功能？", "a": "竹子助理(10:00-20:00)", "av": "https://cos-cloud.aipoju.com/avatar/552dd654539e12b7ba1f64ded2e7317a.png", "d": "2026-11-02", "L": 108, "C": 52, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/55521425558442414", "s": "大家好，我是夏雨～ Yangclaw（AI洋哥）上线近半年，已有 1.2万多位圈友使用，累计提问15万多次。 感谢大家这段时间的使用和反馈！ 从破局Skills商城到破局CLI，我们持…", "id": "55521425558442414"}, {"t": "05后大学生在破局两年半，让我赚到人生第一个百万的8个关键节点", "a": "韦俊国", "av": "https://cos-cloud.aipoju.com/avatar/6efbac4c5ad0678d56bffd7abffdb746.png", "d": "2026-11-02", "L": 111, "C": 15, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/22258452225828551", "s": "", "id": "22258452225828551"}], "recs": [{"t": "今年最后一期破局行动来了！13期破局行动教练、志愿者开启招募", "a": "王庆｜破局实战官", "av": "https://cos-cloud.aipoju.com/avatar/d951944c27914f6249c68f386b5f80d5.png", "d": "2026-11-06", "L": 150, "C": 26, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548241848224548", "s": "前两周发帖征集大家最想报名参加的项目，投票数量最高的几个项目，我们项目评审会评估后也基本都上了，最终确定了16个项目，满足大家的期待。 200多个项目经过6轮项目会的评审，今年最后一期…", "id": "45548241848224548", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 42}, {"t": "AI洞察45：Skill和AI编程的组合拳正在颠覆传统行业分工，重构生产力，把细分生意重新做一遍，AI+行业颠覆的红利机会", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-11", "L": 233, "C": 31, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548288844882258", "s": "先说这篇的一句话重点：大家从今天起都要重视日常跟AI解决自己的业务过程，并沉淀成skill，如果这个skill非常好用，那么立即用AI编程把它做成产品，卖出去，解决一个行业的痛点，这么…", "id": "45548288844882258", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 41}, {"t": "洋哥年度分享来了！2027年，普通人还能抓住哪些AI机会", "a": "王庆｜破局实战官", "av": "https://cos-cloud.aipoju.com/avatar/d951944c27914f6249c68f386b5f80d5.png", "d": "2026-11-13", "L": 94, "C": 13, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258425288428211", "s": "上周洋哥在星球说在考虑要亲自带队开一个AI员工锻造营，把如何打造顶尖员工的思路和原理全流程教给大家，要是这条帖子点赞超过2000就立马开干我正在考虑是否历史性首次担任一... 结果前天…", "id": "22258425288428211", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 39}, {"t": "说件重要的事儿，破局涨价通知： · 12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-13", "L": 161, "C": 39, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258425282484541", "s": "12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。 先恭喜所有的早鸟们，大家是早鸟价中的早鸟价，已经把位置占住了，跟着直接升值了。 …", "id": "22258425282484541", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 38}, {"t": "🔥「双11·双12 年终感恩回馈季」邀新有礼，续费有惠🎁", "a": "晓君@AI破局", "av": "https://cos-cloud.aipoju.com/avatar/6fc8c29cb93ea02b6f1613e69e3433ba.png", "d": "2026-11-09", "L": 153, "C": 29, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/55521412115252414", "s": "各位圈友，年底了，想先认真跟大家说一句：谢谢大家一年的陪伴。♥️ 破局走到今天，离不开大家一次次深度的参与、真实的分享和推荐。 你把朋友带到这里，我们就多了一份把内容和服务做好的责任。…", "id": "55521412115252414", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 38}, {"t": "WorkBuddy「收入变现」，从 0 到 1 全路径实测复盘（保姆级详细教程）", "a": "天山", "av": "https://cos-cloud.aipoju.com/avatar/aec2a37e570e221534a7649e48908e39.png", "d": "2026-11-04", "L": 153, "C": 44, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/55521424252411154", "s": "", "id": "55521424252411154", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 38}, {"t": "AI 接单一个半月，稿费 1.4 万+ 心得", "a": "源", "av": "https://cos-cloud.aipoju.com/avatar/a29534b63f0beaa50c4dccd355d33dc1.png", "d": "2026-11-06", "L": 137, "C": 33, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425128525424842", "s": "大家好，我是源，02 年，送过外卖，AIPPT 行动营 12 期学员。 9 月 15 日起，我全职用 AI 接 PPT 和课件订单，到 11 月 4 日一个半月，接了 87 单，预计稿…", "id": "14425128525424842", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 37}, {"t": "我正在考虑是否历史性首次担任一次破局行动的主教练。", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-07", "L": 1969, "C": 400, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/22258451452458281", "s": "说个之前说过的重要洞察：打造最顶尖的AI员工已经成为AI时代最重要的能力，没有之一：AI洞察38：AI时代的竞争正... 最近也有很多圈友问我怎么打造最顶尖的AI员工。 我先说说顶尖A…", "id": "22258451452458281", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客」，契合你的智能体与业务增长方向", "score": 36}, {"t": "今天正式说我自己两个破局运营的小改变，也欢迎大家一起监督。", "a": "易洋", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "d": "2026-11-10", "L": 312, "C": 52, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425152148814812", "s": "1.开启“破局专属百问百答” 我最近思考了下，我身上最强的两个能力是：AI和商业。 我现在的企业咨询费用已经超过1小时10万，这是基于我过去10多年的商业能力积累，和在AI行业的影响力…", "id": "14425152148814812", "why": "官方精华 · 命中「IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 34}, {"t": "🎁Yangclaw 2.0升级有奖征集｜你最希望AI洋哥增加什么功能？", "a": "竹子助理(10:00-20:00)", "av": "https://cos-cloud.aipoju.com/avatar/552dd654539e12b7ba1f64ded2e7317a.png", "d": "2026-11-02", "L": 108, "C": 52, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/55521425558442414", "s": "大家好，我是夏雨～ Yangclaw（AI洋哥）上线近半年，已有 1.2万多位圈友使用，累计提问15万多次。 感谢大家这段时间的使用和反馈！ 从破局Skills商城到破局CLI，我们持…", "id": "55521425558442414", "why": "官方精华 · 命中「AI智能体与自动化 × 企业落地与商业变现 × 知识管理与业务提效」，契合你的智能体与业务增长方向", "score": 34}, {"t": "1 个月，多做 2w 的 GMV——破局 CLI 怎么赋能我的 AI 培训生意", "a": "小虎AI", "av": "https://cos-cloud.aipoju.com/avatar/119f7000f099483a786421e78a4574ee.png", "d": "2026-11-09", "L": 71, "C": 24, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425152284844282", "s": "大家好，我是小虎，70 后，青玥 AI 创始人，浙大计算机本硕，做了二十年 IT，去年 All in AI，定位 AI 培训加陪跑。 破局 CLI 9 月初内测开放后，我把它接进备课、…", "id": "14425152284844282", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 34}, {"t": "第二场直播复盘｜7单｜洋哥直播稿+Grok换人生上下文，这套SOP直接抄", "a": "栋哥", "av": "https://cos-cloud.aipoju.com/avatar/4d8f2ef2061c37cbdcb18defa82209bd.png", "d": "2026-11-04", "L": 65, "C": 23, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/55521424518448214", "s": "", "id": "55521424518448214", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 34}, {"t": "从1天1条到1小时1条：人物故事视频的字幕、配音、配图提效流程（附2个Skill）", "a": "三水", "av": "https://cos-cloud.aipoju.com/avatar/3bc94089f5cc97ec766dc45ae1fb1adf.png", "d": "2026-11-06", "L": 52, "C": 14, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/82258451545215512", "s": "大家好，我是三水。我的本职是在建筑公司做工程造价，平时要上班。参加这期AI全域带货行动之前，我连剪映都没用过，第一条人物故事视频几乎做了一天。 虽然课程和SOP都看了，但真正开始动手之…", "id": "82258451545215512", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 34}, {"t": "我是破局星球内容负责人，我来公布一个星球内容的最新公约！", "a": "是苗苗呀", "av": "https://cos-cloud.aipoju.com/avatar/24e87226f9b682e6502f2bb76ca316a6.png", "d": "2026-11-06", "L": 225, "C": 63, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548241558151818", "s": "Hi各位，我是破局的首席内容官苗苗。 最近我一直在忙破局公众号 MCN 项目。刚开始对接的时候，路人甲老师就明确了一个要求：我们这个公众号商单项目的文章，不允许使用AI生成。 一开始大…", "id": "45548241558151818", "why": "官方精华 · 命中「IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 33}, {"t": "05后大学生在破局两年半，让我赚到人生第一个百万的8个关键节点", "a": "韦俊国", "av": "https://cos-cloud.aipoju.com/avatar/6efbac4c5ad0678d56bffd7abffdb746.png", "d": "2026-11-02", "L": 111, "C": 15, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/22258452225828551", "s": "", "id": "22258452225828551", "why": "官方精华 · 命中「IP内容与全域获客 × 企业落地与商业变现 × 知识管理与业务提效」，契合你的智能体与业务增长方向", "score": 32}, {"t": "广州破局大会复盘，六万字反思我的三年AI创业路", "a": "醒狮", "av": "https://cos-cloud.aipoju.com/avatar/91c5e52b0a9ca6d2a4aedd2f059d6904.png", "d": "2026-11-07", "L": 83, "C": 32, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/55521428544514244", "s": "", "id": "55521428544514244", "why": "官方精华 · 命中「IP内容与全域获客 × 企业落地与商业变现 × 知识管理与业务提效」，契合你的智能体与业务增长方向", "score": 31}, {"t": "AI 公众号商单必看：名称、标题、封面、内容、飞轮", "a": "小林", "av": "https://cos-cloud.aipoju.com/avatar/32127ed9a8813a6e13455e1de8f55b26.png", "d": "2026-11-08", "L": 165, "C": 36, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425128148842542", "s": "大家好，我是小林。 18 天累计发布了 23 篇文章，总阅读 25 万+，涨粉 3000+，单篇最高阅读 3万+，商单收入 2 万，金钱成本 1 万，人力成本就是我的时间投入了。 过去…", "id": "14425128148842542", "why": "官方精华 · 命中「IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 30}, {"t": "大家好，我是王庆，破局行动负责人。最近一直在改新手营的直播课件，经过洋哥的指导后，并且已经正式交付过一场，获得不错的反馈，和大家分享下我的这次经历。", "a": "王庆", "av": "https://cos-cloud.aipoju.com/avatar/0de8e2991e20b71d1020af171952d14e.png", "d": "2026-11-08", "L": 141, "C": 31, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/45548284445544888", "s": "前几天的新手营复盘会，我被洋哥叼了一顿，满分100分，只给我打了10分。 说实话挺失落的，当晚也没怎么睡，一直在反思。 今天彻底想通了： 确实没有真正理解用户思维，也没有在每一次设计时…", "id": "45548284445544888", "why": "官方精华 · 命中「IP内容与全域获客 × 企业落地与商业变现」，契合你的智能体与业务增长方向", "score": 29}, {"t": "67岁零基础，21天全勤产出18条AI视频我是怎么做到的？", "a": "智慧姐", "av": "https://cos-cloud.aipoju.com/avatar/c1905b34e861dcabd445b7f88cef5170.png", "d": "2026-11-03", "L": 55, "C": 17, "tp": "普通主题", "e": true, "u": "https://aipoju.com/topic-details/14425124844481552", "s": "一、先亮成绩单​ 12期\"AI全域系统带货\"行动营，21天，我交出的成绩单：​ ​ 🎯 21天硬核战绩单：​ • 全勤打卡：0缺勤，秒退399元押金。​ • 产能飞跃：从上一期的3天手…", "id": "14425124844481552", "why": "官方精华 · 命中「AI智能体与自动化 × IP内容与全域获客」，契合你的智能体与业务增长方向", "score": 28}, {"t": "被裁程序员转行带货，8 个月 GMV 破百万", "a": "沐叶", "av": "https://cos-cloud.aipoju.com/avatar/06ed72dcb848f000df176fea4efa4ea8.png", "d": "2026-11-10", "L": 203, "C": 52, "tp": "长文章", "e": true, "u": "https://aipoju.com/topic-details/14425152828525152", "s": "", "id": "14425152828525152", "why": "官方精华 · 命中「IP内容与全域获客」，契合你的智能体与业务增长方向", "score": 26}], "actions": [{"name": "OpenClaw自媒体IP获客", "role": "学员", "status": "已结束", "period": "2026-03-13 ~ 04-11", "enroll": 4476, "u": "https://aipoju.com/details/1d1141a3-e374-479f-97ab-f1e4f5f818af/a402921c-15cb-4ab4-ad39-cb91a275eba8"}, {"name": "小红书虚拟产品（n8n工作流）", "role": "学员", "status": "已结束", "period": "2025-12-29 ~ 2026-01-27", "enroll": 1785, "u": "https://aipoju.com/details/89274e75-efd5-4533-b30b-d2df02fa7e64/0d1cfced-df45-4fa6-a2af-2bfbaac787d0"}, {"name": "AI Temu跨境电商店群实战", "role": "学员", "status": "已结束", "period": "2025-09-25 ~ 10-29", "enroll": 498, "u": "https://aipoju.com/details/300ffe84-7389-411e-8fcd-fcf226f9d82e/12d63d70-7fae-4f1f-bf84-1414b15e8865"}, {"name": "RPA+Agent 自媒体内容创作", "role": "学员", "status": "已结束", "period": "2024-10-29 ~ 11-18", "enroll": 563, "u": "https://aipoju.com/details/6366ac08-cc0c-41fb-bcbf-78705b71c858/1fddb19f-074d-48c6-958c-d3e181a74564"}, {"name": "AI与知识管理体系", "role": "学员", "status": "已结束", "period": "2024-10-29 ~ 11-18", "enroll": 475, "u": "https://aipoju.com/details/6366ac08-cc0c-41fb-bcbf-78705b71c858/f7e1ca8b-c9d8-4130-83f5-b754e17065dd"}, {"name": "WorkBuddy直播行动营", "role": "可关注", "status": "进行中", "period": "2026-11-13 ~ 12-03", "enroll": 1117, "u": "https://aipoju.com/details/3c777958-d7ca-4b2d-8559-b0e350ff3cc3/145ba7ec-dec0-4d18-83c4-8254a360a64f"}, {"name": "GEO获客", "role": "可关注", "status": "已结束", "period": "2026-09-23 ~ 10-13", "enroll": 798, "u": "https://aipoju.com/details/974fc299-ec42-46ac-a539-c317cd97ab8f/091a47d9-f424-43b4-b534-a0cba1d3f9b5"}, {"name": "AI PPT实战", "role": "可关注", "status": "已结束", "period": "2026-09-23 ~ 10-30", "enroll": 322, "u": "https://aipoju.com/details/974fc299-ec42-46ac-a539-c317cd97ab8f/a9868803-2e88-446a-9f3b-902982aec4eb"}], "hosted": {"total": 0, "list": []}, "joined": {"total": 2, "list": [{"t": "OpenClaw企培×自媒体实战经验交流", "d": "04-19 19:00", "ty": "干货分享局", "s": "已结束", "cur": 30, "max": 32, "addr": "深圳", "host": "无界生长", "u": "https://aipoju.com/meeting/detail/bf98b984-0156-4749-b7c1-47edd0ddb57a"}, {"t": "手把手带你Openclaw部署实操", "d": "03-01 14:00", "ty": "实操带领局", "s": "已结束", "cur": 50, "max": 50, "addr": "深圳", "host": "AI卷王龙哥", "u": "https://aipoju.com/meeting/detail/7166d5dd-afa8-446f-8954-dc8214d48978"}]}, "national": {"total": 19, "list": [{"t": "用GEO重构品牌获客", "d": "11-29 14:00", "ty": "实操带领局", "s": "报名中", "cur": 3, "max": 30, "addr": "深圳", "host": "AI卷王龙哥", "u": "https://aipoju.com/meeting/detail/3b384459-dd33-41ad-b879-22426b248b64"}, {"t": "《AI时代企业新经营》系列沙龙", "d": "11-26 14:30", "ty": "干货分享局", "s": "报名中", "cur": 1, "max": 20, "addr": "杭州", "host": "李方菊", "u": "https://aipoju.com/meeting/detail/4a667ce7-dcfe-498c-8d89-7c771acab43d"}, {"t": "Workbuddy跑通AI视频剪辑工作流", "d": "11-25 13:30", "ty": "主题讨论局", "s": "报名中", "cur": 5, "max": 12, "addr": "苏州", "host": "闪闪", "u": "https://aipoju.com/meeting/detail/448f31e5-06a4-4a87-9f1d-aeea56bdec95"}, {"t": "《AI时代企业新经营》系列沙龙", "d": "11-22 14:30", "ty": "干货分享局", "s": "报名中", "cur": 1, "max": 30, "addr": "杭州", "host": "李方菊", "u": "https://aipoju.com/meeting/detail/1f0f7a9a-5c41-4140-b777-b7b870ad0c99"}, {"t": "8 年操盘手第二曲线复盘：把本事变成产品", "d": "11-22 14:00", "ty": "主题讨论局", "s": "报名中", "cur": 1, "max": 20, "addr": "杭州", "host": "钧淳", "u": "https://aipoju.com/meeting/detail/914a4b98-6697-455c-88a4-000a598df508"}, {"t": "破局行动家游学", "d": "11-21 14:00", "ty": "主题讨论局", "s": "报名中", "cur": 31, "max": 40, "addr": "南京", "host": "乘风", "u": "https://aipoju.com/meeting/detail/914a80fa-2587-4a35-91da-38659733f270"}, {"t": "WordPress建站+主题开发", "d": "11-21 14:00", "ty": "实操带领局", "s": "报名中", "cur": 4, "max": 9, "addr": "广州", "host": "关山阅", "u": "https://aipoju.com/meeting/detail/9c68c24b-3a2c-4dad-97a4-5f47ebf43014"}, {"t": "WorkBuddy实操与案例分享", "d": "11-20 19:00", "ty": "主题讨论局", "s": "报名中", "cur": 2, "max": 20, "addr": "成都", "host": "猫不笑", "u": "https://aipoju.com/meeting/detail/c23876ce-1f4e-4b1d-8931-413383bbb18c"}, {"t": "企业AI落地及WorkBuddy交流分享", "d": "11-20 14:00", "ty": "主题讨论局", "s": "报名中", "cur": 2, "max": 10, "addr": "苏州", "host": "陈宇峰", "u": "https://aipoju.com/meeting/detail/4e808688-da25-4545-812a-61a242848ae1"}, {"t": "《AI时代企业新经营》系列沙龙", "d": "11-18 14:30", "ty": "干货分享局", "s": "报名中", "cur": 1, "max": 30, "addr": "杭州", "host": "李方菊", "u": "https://aipoju.com/meeting/detail/89502978-91ba-437b-95a0-7852bac6ed0f"}, {"t": "你的AI产品不赚钱，到底卡在哪里？", "d": "11-18 14:00", "ty": "干货分享局", "s": "报名中", "cur": 2, "max": 10, "addr": "北京", "host": "李嘉伟", "u": "https://aipoju.com/meeting/detail/c53bb5c9-7203-4209-8d72-e8c51f98e6dc"}, {"t": "Ai如何赋能大健康主题沙龙", "d": "11-18 14:00", "ty": "干货分享局", "s": "报名中", "cur": 3, "max": 6, "addr": "广州", "host": "悦琦", "u": "https://aipoju.com/meeting/detail/8f511c84-e3cc-43c5-ad37-d49bcbfd17a8"}, {"t": "爬山运动", "d": "11-22 14:00", "ty": "户外运动局", "s": "已报满", "cur": 6, "max": 6, "addr": "重庆", "host": "穗妍", "u": "https://aipoju.com/meeting/detail/4381f6e0-9e70-4f01-a4f9-1ad927fdb98c"}, {"t": "AI米圈 | FDE共建的四维机制", "d": "11-17 19:00", "ty": "主题讨论局", "s": "已报满", "cur": 5, "max": 5, "addr": "广州", "host": "靖颐🍀", "u": "https://aipoju.com/meeting/detail/64b9e38d-27f0-42da-b0e2-a117f39332c2"}, {"t": "GEO经验分享交流局", "d": "11-17 15:00", "ty": "干货分享局", "s": "已报满", "cur": 5, "max": 5, "addr": "佛山", "host": "关山阅", "u": "https://aipoju.com/meeting/detail/6e05545c-8ae7-47ad-9964-9c149e1dc3d7"}, {"t": "AI+跨境电商（BSS 内部）", "d": "11-17 14:00", "ty": "主题讨论局", "s": "已报满", "cur": 6, "max": 6, "addr": "杭州", "host": "小林", "u": "https://aipoju.com/meeting/detail/e1b3636e-57b5-4781-ae7b-157a63def510"}, {"t": "AI 如何助力成为教练式父母", "d": "11-16 18:30", "ty": "主题讨论局", "s": "已报满", "cur": 5, "max": 5, "addr": "武汉", "host": "诸葛宁", "u": "https://aipoju.com/meeting/detail/799d62d6-e217-4e68-a7a5-fa8d12338f5c"}, {"t": "AI教育", "d": "11-15 18:30", "ty": "主题讨论局", "s": "已报满", "cur": 5, "max": 5, "addr": "武汉", "host": "桃子", "u": "https://aipoju.com/meeting/detail/decbe03a-5e05-4469-9e1b-6839d2590d83"}, {"t": "AI短视频时代不缺流量饭局沟通", "d": "11-15 18:00", "ty": "主题讨论局", "s": "报名已截止", "cur": 6, "max": 10, "addr": "广州", "host": "大海妈非遗中医调视力&鼻炎", "u": "https://aipoju.com/meeting/detail/653b33f9-a68c-495b-b299-dee5015a0249"}]}, "snapshots": [{"d": "11-15", "n": 13, "L": 111, "top": "刘同学"}, {"d": "11-14", "n": 53, "L": 864, "top": "西堂AI视频"}, {"d": "11-13", "n": 59, "L": 1482, "top": "易洋"}, {"d": "11-12", "n": 70, "L": 1674, "top": "易洋"}, {"d": "11-11", "n": 79, "L": 2252, "top": "易洋"}, {"d": "11-10", "n": 62, "L": 2147, "top": "易洋"}, {"d": "11-09", "n": 71, "L": 2308, "top": "Kitty🍀👣 👣"}], "members": [{"name": "易洋", "userNumber": "1", "av": "https://cos-cloud.aipoju.com/avatar/d2fc71fafa780659f966a4a0a3f19eb8.png", "dom": "精华高产型", "score": 1394, "posts": 8, "likes": 3301, "comments": 627, "coins": 190, "u": "https://aipoju.com/user/1"}, {"name": "兔女财", "userNumber": "35555", "av": "https://cos-cloud.aipoju.com/avatar/9ce4dbbf5efb124de9220c353c81421b.png", "dom": "高产型", "score": 834, "posts": 18, "likes": 418, "comments": 297, "coins": 0, "u": "https://aipoju.com/user/35555"}, {"name": "阿海", "userNumber": "41210", "av": "https://cos-cloud.aipoju.com/avatar/e4fb2bb615bd025b8d5f8a071ad9fc90.png", "dom": "高产型", "score": 581, "posts": 12, "likes": 287, "comments": 202, "coins": 0, "u": "https://aipoju.com/user/41210"}, {"name": "启点", "userNumber": "33728", "av": "https://cos-cloud.aipoju.com/avatar/f99ae02fffff772956a4a1b397c68ace.png", "dom": "高产型", "score": 530, "posts": 12, "likes": 264, "comments": 179, "coins": 0, "u": "https://aipoju.com/user/33728"}, {"name": "智井AI", "userNumber": "36550", "av": "https://cos-cloud.aipoju.com/avatar/e83db6e46a861cebb90d7d6054a62907.png", "dom": "高产型", "score": 484, "posts": 11, "likes": 221, "comments": 165, "coins": 0, "u": "https://aipoju.com/user/36550"}, {"name": "云帆", "userNumber": "48507", "av": "https://cos-cloud.aipoju.com/avatar/9200bde573955ab4b77da3da724aee7b.png", "dom": "高产型", "score": 456, "posts": 12, "likes": 214, "comments": 147, "coins": 0, "u": "https://aipoju.com/user/48507"}, {"name": "张雷13211601382", "userNumber": "22384", "av": "https://cos-cloud.aipoju.com/avatar/bd668ce4be4dfb097aafa57f2056e989.png", "dom": "高产型", "score": 449, "posts": 15, "likes": 197, "comments": 130, "coins": 0, "u": "https://aipoju.com/user/22384"}, {"name": "老张", "userNumber": "56568", "av": "https://cos-cloud.aipoju.com/avatar/cb87352378c0cbee3cfbd78bf31f63f8.png", "dom": "高产型", "score": 415, "posts": 10, "likes": 186, "comments": 139, "coins": 0, "u": "https://aipoju.com/user/56568"}, {"name": "向好", "userNumber": "107327", "av": "https://cos-cloud.aipoju.com/avatar/7ba396c7bea49f0153667cc95388bb2b.png", "dom": "高产型", "score": 410, "posts": 10, "likes": 192, "comments": 136, "coins": 0, "u": "https://aipoju.com/user/107327"}, {"name": "周萝卜", "userNumber": "36105", "av": "https://cos-cloud.aipoju.com/avatar/750b82e8bfa8a2c723f1cd559c1b457f.png", "dom": "高产型", "score": 402, "posts": 9, "likes": 191, "comments": 137, "coins": 0, "u": "https://aipoju.com/user/36105"}, {"name": "刘同学", "userNumber": "62514", "av": "https://cos-cloud.aipoju.com/avatar/1bcc2447e3b0809283c577ea69fe3b37.png", "dom": "高产型", "score": 395, "posts": 13, "likes": 206, "comments": 112, "coins": 0, "u": "https://aipoju.com/user/62514"}, {"name": "西堂AI视频", "userNumber": "30124", "av": "https://cos-cloud.aipoju.com/avatar/8b1d94efee03e503252c6aff32964be5.png", "dom": "高产型", "score": 384, "posts": 8, "likes": 274, "comments": 125, "coins": 2, "u": "https://aipoju.com/user/30124"}, {"name": "时光", "userNumber": "34150", "av": "https://cos-cloud.aipoju.com/avatar/fdebd6fc1a79623cf4d946f9a880d91f.png", "dom": "高产型", "score": 378, "posts": 5, "likes": 163, "comments": 148, "coins": 0, "u": "https://aipoju.com/user/34150"}, {"name": "诸葛宁", "userNumber": "100472", "av": "https://cos-cloud.aipoju.com/avatar/99061aea5944338447179a1f08f704c4.png", "dom": "高产型", "score": 372, "posts": 8, "likes": 172, "comments": 129, "coins": 0, "u": "https://aipoju.com/user/100472"}, {"name": "王中阳讲AI", "userNumber": "23454", "av": "https://cos-cloud.aipoju.com/avatar/edc6e215fac918cfb28054ee38d03bd9.png", "dom": "高产型", "score": 370, "posts": 8, "likes": 172, "comments": 128, "coins": 0, "u": "https://aipoju.com/user/23454"}, {"name": "汉堡侠", "userNumber": "35403", "av": "https://cos-cloud.aipoju.com/avatar/909d0903122a524003f4e272a7328d0c.png", "dom": "高产型", "score": 348, "posts": 9, "likes": 164, "comments": 113, "coins": 0, "u": "https://aipoju.com/user/35403"}, {"name": "AI生产力廖老师", "userNumber": "48432", "av": "https://cos-cloud.aipoju.com/avatar/b918a8bf1f1d13c2e603f09b107ec049.png", "dom": "高产型", "score": 344, "posts": 5, "likes": 174, "comments": 130, "coins": 0, "u": "https://aipoju.com/user/48432"}, {"name": "宁不吃香菜", "userNumber": "39014", "av": "https://cos-cloud.aipoju.com/avatar/e7980cdfd7ad32cb1d5b8f122f67d8e4.png", "dom": "高产型", "score": 337, "posts": 9, "likes": 148, "comments": 109, "coins": 0, "u": "https://aipoju.com/user/39014"}, {"name": "小虎AI", "userNumber": "55055", "av": "https://cos-cloud.aipoju.com/avatar/119f7000f099483a786421e78a4574ee.png", "dom": "精华高产型", "score": 326, "posts": 6, "likes": 241, "comments": 109, "coins": 2, "u": "https://aipoju.com/user/55055"}, {"name": "一夜一光", "userNumber": "67987", "av": "https://cos-cloud.aipoju.com/avatar/28dfd7822a80b9bdf1480c30717afc2f.png", "dom": "高产型", "score": 317, "posts": 6, "likes": 146, "comments": 114, "coins": 0, "u": "https://aipoju.com/user/67987"}, {"name": "浪迹", "userNumber": "108933", "av": "https://cos-cloud.aipoju.com/avatar/5051d03f4dbf724c4ec37fde1aa50202.png", "dom": "高产型", "score": 283, "posts": 6, "likes": 119, "comments": 100, "coins": 0, "u": "https://aipoju.com/user/108933"}, {"name": "船新の晓孩", "userNumber": "65289", "av": "https://cos-cloud.aipoju.com/avatar/50344b7c57acca6435324cee0b43c555.png", "dom": "高产型", "score": 282, "posts": 4, "likes": 141, "comments": 107, "coins": 0, "u": "https://aipoju.com/user/65289"}, {"name": "学敏", "userNumber": "37815", "av": "https://cos-cloud.aipoju.com/avatar/22e6f85fe4e302125197caf7e0ef8b99.png", "dom": "高产型", "score": 272, "posts": 4, "likes": 122, "comments": 104, "coins": 0, "u": "https://aipoju.com/user/37815"}, {"name": "曾经拥有的梦幻", "userNumber": "62247", "av": "https://cos-cloud.aipoju.com/avatar/3c6063f9e15594b64b33496e074b984e.png", "dom": "高产型", "score": 268, "posts": 6, "likes": 123, "comments": 92, "coins": 0, "u": "https://aipoju.com/user/62247"}, {"name": "飞掌柜", "userNumber": "62836", "av": "https://cos-cloud.aipoju.com/avatar/549f07ba6bc44421987a62afa1f4d5dc.png", "dom": "高产型", "score": 267, "posts": 7, "likes": 148, "comments": 84, "coins": 0, "u": "https://aipoju.com/user/62836"}, {"name": "Kitty🍀👣 👣", "userNumber": "32159", "av": "https://cos-cloud.aipoju.com/avatar/473eebeb3a1c933b1a236b470d9b45b9.png", "dom": "高产型", "score": 256, "posts": 5, "likes": 130, "comments": 90, "coins": 0, "u": "https://aipoju.com/user/32159"}, {"name": "Lizzy", "userNumber": "37148", "av": "https://cos-cloud.aipoju.com/avatar/325ff779d12658fdff29edd7a0098e5d.png", "dom": "高产型", "score": 251, "posts": 6, "likes": 116, "comments": 84, "coins": 0, "u": "https://aipoju.com/user/37148"}, {"name": "静水流深", "userNumber": "33781", "av": "https://cos-cloud.aipoju.com/avatar/4646afe78c7e6cc84118d3056b4b66f5.png", "dom": "高产型", "score": 242, "posts": 5, "likes": 161, "comments": 80, "coins": 1, "u": "https://aipoju.com/user/33781"}, {"name": "南小数", "userNumber": "10307", "av": "https://cos-cloud.aipoju.com/avatar/d9c2b27038447c0a9c684545e3cb8fd7.png", "dom": "高产型", "score": 241, "posts": 5, "likes": 105, "comments": 85, "coins": 0, "u": "https://aipoju.com/user/10307"}, {"name": "米芽", "userNumber": "100586", "av": "https://cos-cloud.aipoju.com/avatar/2fdcf59d6f7e945cb1ee75cfc10e21cc.png", "dom": "高产型", "score": 240, "posts": 6, "likes": 110, "comments": 79, "coins": 0, "u": "https://aipoju.com/user/100586"}], "topics": [{"name": "Agent/Skills", "L": 972}, {"name": "AIP与自媒体", "L": 308}, {"name": "AI企业服务/FDE", "L": 296}, {"name": "AI编程/工具", "L": 293}, {"name": "AI办公与知识库", "L": 61}, {"name": "AI流量获客", "L": 27}, {"name": "AI商业与思维", "L": 13}, {"name": "AI出海与电商", "L": 11}], "trend": [{"d": "10-17", "n": 0}, {"d": "10-18", "n": 0}, {"d": "10-19", "n": 0}, {"d": "10-20", "n": 0}, {"d": "10-21", "n": 0}, {"d": "10-22", "n": 0}, {"d": "10-23", "n": 0}, {"d": "10-24", "n": 0}, {"d": "10-25", "n": 0}, {"d": "10-26", "n": 0}, {"d": "10-27", "n": 0}, {"d": "10-28", "n": 0}, {"d": "10-29", "n": 0}, {"d": "10-30", "n": 0}, {"d": "10-31", "n": 0}, {"d": "11-01", "n": 0}, {"d": "11-02", "n": 0}, {"d": "11-03", "n": 0}, {"d": "11-04", "n": 0}, {"d": "11-05", "n": 0}, {"d": "11-06", "n": 82}, {"d": "11-07", "n": 52}, {"d": "11-08", "n": 59}, {"d": "11-09", "n": 71}, {"d": "11-10", "n": 62}, {"d": "11-11", "n": 79}, {"d": "11-12", "n": 70}, {"d": "11-13", "n": 59}, {"d": "11-14", "n": 53}, {"d": "11-15", "n": 13}], "rank7": [{"t": "几个月前，我给全体破局圈友们做过一次破局AI化的分享。", "a": "易洋", "L": 385, "d": "2026-11-11", "u": "https://aipoju.com/topic-details/82258488815855112"}, {"t": "今天正式说我自己两个破局运营的小改变，也欢迎大家一起监督。", "a": "易洋", "L": 312, "d": "2026-11-10", "u": "https://aipoju.com/topic-details/14425152148814812"}, {"t": "AI洞察45：Skill和AI编程的组合拳正在颠覆传统行业分工，重构生产力，把细分生意重新做一遍，AI+行业颠覆的红利机会", "a": "易洋", "L": 233, "d": "2026-11-11", "u": "https://aipoju.com/topic-details/45548288844882258"}, {"t": "被裁程序员转行带货，8 个月 GMV 破百万", "a": "沐叶", "L": 203, "d": "2026-11-10", "u": "https://aipoju.com/topic-details/14425152828525152"}, {"t": "AI 公众号商单必看：名称、标题、封面、内容、飞轮", "a": "小林", "L": 165, "d": "2026-11-08", "u": "https://aipoju.com/topic-details/14425128148842542"}, {"t": "说件重要的事儿，破局涨价通知： · 12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。", "a": "易洋", "L": 161, "d": "2026-11-13", "u": "https://aipoju.com/topic-details/22258425282484541"}, {"t": "🔥「双11·双12 年终感恩回馈季」邀新有礼，续费有惠🎁", "a": "晓君@AI破局", "L": 153, "d": "2026-11-09", "u": "https://aipoju.com/topic-details/55521412115252414"}, {"t": "《破局社群公约》严禁以教练身份拉学员进私域营销", "a": "王庆｜破局实战官", "L": 141, "d": "2026-11-09", "u": "https://aipoju.com/topic-details/22258485888154211"}], "rank30": [{"t": "我正在考虑是否历史性首次担任一次破局行动的主教练。", "a": "易洋", "L": 1969, "d": "2026-11-07", "u": "https://aipoju.com/topic-details/22258451452458281"}, {"t": "几个月前，我给全体破局圈友们做过一次破局AI化的分享。", "a": "易洋", "L": 385, "d": "2026-11-11", "u": "https://aipoju.com/topic-details/82258488815855112"}, {"t": "今天正式说我自己两个破局运营的小改变，也欢迎大家一起监督。", "a": "易洋", "L": 312, "d": "2026-11-10", "u": "https://aipoju.com/topic-details/14425152148814812"}, {"t": "AI洞察45：Skill和AI编程的组合拳正在颠覆传统行业分工，重构生产力，把细分生意重新做一遍，AI+行业颠覆的红利机会", "a": "易洋", "L": 233, "d": "2026-11-11", "u": "https://aipoju.com/topic-details/45548288844882258"}, {"t": "我是破局星球内容负责人，我来公布一个星球内容的最新公约！", "a": "是苗苗呀", "L": 225, "d": "2026-11-06", "u": "https://aipoju.com/topic-details/45548241558151818"}, {"t": "被裁程序员转行带货，8 个月 GMV 破百万", "a": "沐叶", "L": 203, "d": "2026-11-10", "u": "https://aipoju.com/topic-details/14425152828525152"}, {"t": "AI 公众号商单必看：名称、标题、封面、内容、飞轮", "a": "小林", "L": 165, "d": "2026-11-08", "u": "https://aipoju.com/topic-details/14425128148842542"}, {"t": "说件重要的事儿，破局涨价通知： · 12月12日双十二活动结束后，12月14日 00:00，AI破局俱乐部的门票价格将准时涨至2899元。", "a": "易洋", "L": 161, "d": "2026-11-13", "u": "https://aipoju.com/topic-details/22258425282484541"}], "runs": [{"time": "11-10 02:41", "today": 71, "fill": 29, "sum": 1973, "elite": 30, "top": "王庆｜破局实战官"}, {"time": "11-10 03:08", "today": 71, "fill": 29, "sum": 1974, "elite": 30, "top": "王庆｜破局实战官"}, {"time": "11-14 22:59", "today": 53, "fill": 47, "sum": 1996, "elite": 30, "top": "西堂AI视频"}, {"time": "11-15 15:00", "today": 12, "fill": 88, "sum": 1996, "elite": 30, "top": "刘同学"}, {"time": "11-15 15:29", "today": 13, "fill": 87, "sum": 1980, "elite": 30, "top": "刘同学"}]};
+//__POJU_DATA_END__
+var D = POJU_DATA;
+var PALETTE = ['#FF7A3D','#2DD4BF','#F5C518','#8B7CF6','#5BA8FF','#F471B5','#7CD88A','#E2B93B'];
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function avFail(img){var p=img.parentNode;if(!p)return;p.classList.add('f');p.textContent=(img.getAttribute('data-i')||'?').trim().slice(0,1).toUpperCase();}
+window.avFail=avFail;
+function avHtml(av,name,cls){
+  var c = cls || 'pav';
+  if(!av){
+    var ch = (name||'?').trim().slice(0,1).toUpperCase();
+    return '<span class="'+c+' f">'+esc(ch)+'</span>';
+  }
+  return '<span class="'+c+'"><img src="'+esc(av)+'" alt="" loading="lazy" data-i="'+esc(name)+'" onerror="avFail(this)"></span>';
+}
+function tpClass(tp){return (tp==='长文章')?'long':'';}
+function likeHtml(L){return '<span class="pl"><span class="h">赞</span>'+L+'</span>';}
+
+/* ---------- header / KPI ---------- */
+function initHeader(){
+  var next=new Date(Math.ceil(Date.now()/(3*3600000))*(3*3600000));
+  var pad=function(n){return (n<10?'0':'')+n;};
+  document.getElementById('hMeta').innerHTML=
+    '数据更新于 <b>'+esc(D.updatedAt||'—')+'</b><span class="sep">|</span>每 3 小时自动采集<span class="sep">|</span>下次约 <b>'+pad(next.getHours())+':'+pad(next.getMinutes())+'</b>';
+  var fUp = document.getElementById('fUpdated');
+  if(fUp) fUp.textContent = D.updatedAt||'';
+  if(D.account && D.account.fullName){
+    var ub = document.getElementById('userBadge');
+    if(ub){
+      ub.innerHTML = esc(D.account.fullName) + (D.account.userNumber ? ' · #'+esc(D.account.userNumber) : '');
+    }
+  }
+  var t1=document.getElementById('tL'), t2=document.getElementById('tE');
+  if(t1){ t1.textContent = (D.latest||[]).length; }
+  if(t2){ t2.textContent = (D.elite||[]).length; }
+  var gn=document.getElementById('gNatCount'), gj=document.getElementById('gJoinCount'), gh=document.getElementById('gHostCount');
+  if(gn) gn.textContent = (D.national&&D.national.total)||0;
+  if(gj) gj.textContent = (D.joined&&D.joined.total)||0;
+  if(gh) gh.textContent = (D.hosted&&D.hosted.total)||0;
+}
+
+var ICONS={
+  post:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#FF9B6B" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h4"/><path d="M8 12h8M8 16h6"/></svg>',
+  heart:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#5FE0CE" stroke-width="1.8"><path d="M12 20s-7-4.4-9-8.5C1.5 8 3.5 5 6.5 5c2 0 3.5 1 4.5 2.5C12 6 13.5 5 15.5 5c3 0 5 3 3.5 6.5C17 15.6 12 20 12 20z"/></svg>',
+  user:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#C6CCDC" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  topic:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.8"><path d="M4 19V5h16v14"/><path d="M8 15l3-4 3 3 4-6"/></svg>',
+  elite:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#F5C518" stroke-width="1.8"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.9 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>'
+};
+
+function renderKpis(){
+  var sumL = (D.latest||[]).reduce(function(s,p){return s+(p.L||0);},0);
+  var hot = (D.topics&&D.topics[0])||null;
+  var cards=[
+    {k:'今日发帖（'+esc(D.capturedAt||'今日')+'）',n:D.todayCount+(D.fillCount?'<small>+'+D.fillCount+'</small>':''),sub:D.fillCount?('前日填充 '+D.fillCount+' 条凑满 100'):'全部为当日发布',ic:ICONS.post},
+    {k:'最新100 · 获赞',n:sumL,sub:'最新 100 帖累计获赞',ic:ICONS.heart,acc:1},
+    {k:'最热话题',n:hot?esc(hot.name):'—',sub:hot?('获赞 '+hot.L):'暂无数据',ic:ICONS.topic},
+    {k:'精华帖',n:(D.elite||[]).length,sub:'采集窗口内官方精华',ic:ICONS.elite,gold:1}
+  ];
+  var html = cards.map(function(c){
+    return '<div class="kpi'+(c.acc?' acc':'')+(c.gold?' gold':'')+'"><div class="kpi-label">'+c.ic+c.k+'</div><span class="kpi-num">'+c.n+'</span><div class="kpi-sub">'+esc(c.sub)+'</div></div>';
+  }).join('');
+  document.getElementById('kpis').innerHTML = html;
+}
+
+/* ---------- 帖子列表 ---------- */
+function rowHtml(p, elite){
+  var badge = p.e ? '<span class="badge-elite">精华</span>' : '';
+  var mid = (elite || p.s) ? '<span class="pt">'+badge+esc(p.t)+'</span>'+(p.s?'<div class="psum">'+esc(p.s)+'</div>':'')
+                           : '<span class="pt">'+badge+esc(p.t)+'</span>';
+  return '<a class="prow" href="'+esc(p.u||'#')+'" target="_blank" rel="noopener">'+
+    '<span class="pa">'+avHtml(p.av,p.a)+'<span class="pan">'+esc(p.a)+'</span></span>'+
+    '<span class="pmid">'+mid+'</span>'+
+    '<span class="pm"><span class="pd">'+esc(p.d||'')+'</span><span class="pty '+tpClass(p.tp)+'">'+esc(p.tp||'主题')+'</span>'+likeHtml(p.L)+'</span>'+
+  '</a>';
+}
+var postTab='latest';
+function renderPosts(){
+  var w=document.getElementById('postWrap');
+  var list = postTab==='elite' ? (D.elite||[]) : (D.latest||[]);
+  if(!list.length){w.innerHTML='<div class="empty">暂无采集数据，等待首次自动采集…</div>';return;}
+  w.innerHTML=list.map(function(p){return rowHtml(p, postTab==='elite');}).join('');
+}
+function bindPostTabs(){
+  var t=document.getElementById('postTabs');
+  if(!t)return;
+  t.querySelectorAll('.tab-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      postTab=b.getAttribute('data-p')||'latest';
+      t.querySelectorAll('.tab-btn').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      renderPosts();
+    });
+  });
+}
+
+function renderRecs(){
+  var w=document.getElementById('recsWrap');
+  if(!w)return;
+  var list=D.recs||[];
+  document.getElementById('recCount').textContent=list.length;
+  if(!list.length){w.innerHTML='<div class="empty">今日暂无匹配推荐，等待下一轮采集…</div>';return;}
+  w.innerHTML=list.map(function(r){
+    var badge=r.e?'<span class="badge-elite">精华</span>':'';
+    return '<a class="rcard" href="'+esc(r.u||'#')+'" target="_blank" rel="noopener">'+
+      '<div class="r-top">'+badge+'<span class="r-t">'+esc(r.t)+'</span></div>'+
+      (r.s?'<div class="r-s">'+esc(r.s)+'</div>':'')+
+      '<div class="r-why">'+esc(r.why)+'</div>'+
+      '<div class="r-meta">'+avHtml(r.av,r.a)+'<span class="pan">'+esc(r.a)+'</span>'+
+      '<span class="pd">'+esc(r.d||'')+'</span>'+likeHtml(r.L)+'</div>'+
+    '</a>';
+  }).join('');
+}
+
+/* ---------- 行动 / 组局 ---------- */
+function renderActions(){
+  var w=document.getElementById('actionWrap');
+  var list=D.actions||[];
+  if(!list.length){w.innerHTML='<div class="empty">暂无行动营数据</div>';return;}
+  w.innerHTML=list.map(function(a){
+    var roleCls = a.role.indexOf('助教')>=0 ? 'ta' : (a.role.indexOf('教练')>=0 ? 'co' : 'stu');
+    var stCls = a.status==='进行中' ? '' : (a.status==='已结束' ? ' off' : ' on');
+    var open = a.u ? '<a class="acard" href="'+esc(a.u)+'" target="_blank" rel="noopener">' : '<div class="acard">';
+    var close = a.u ? '</a>' : '</div>';
+    return open+
+      '<div class="a-top"><span class="a-name" title="'+esc(a.name)+'">'+esc(a.name)+'</span>'+
+      '<span class="a-status'+stCls+'">'+esc(a.status)+'</span></div>'+
+      '<span class="a-role '+roleCls+'">'+esc(a.role)+'</span>'+
+      '<div class="a-meta">'+
+      (a.period?'<span>周期 <b>'+esc(a.period)+'</b></span>':'')+
+      '<span>已报 <b class="enr">'+a.enroll+'</b> 人</span>'+
+      '</div>'+close;
+  }).join('');
+}
+
+function stClass(s){
+  if(s==='报名中'||s==='已报满'||s==='报名已截止')return 'soon';
+  if(s==='已结束')return 'done';
+  return 'go';
+}
+var groupTab='national';
+function renderGroups(){
+  var w=document.getElementById('nationalWrap');
+  var gt=document.getElementById('groupTitle');
+  var src = groupTab==='joined' ? (D.joined||{total:0,list:[]}) : (groupTab==='hosted' ? (D.hosted||{total:0,list:[]}) : (D.national||{total:0,list:[]}));
+  var list = src.list||[];
+  var labelMap = {'national':'全国进行中','joined':'我参与过的组局','hosted':'我发起的组局'};
+  if(gt){
+    gt.innerHTML = labelMap[groupTab]+' <b>'+(src.total||list.length)+'</b> 场 · 按城市整理（点击直达组局详情）';
+  }
+  if(!list.length){w.innerHTML='<div class="empty">当前分类下暂无组局记录</div>';return;}
+  var groups={}, order=[];
+  list.forEach(function(g){
+    var c=g.addr||'其他';
+    if(!groups[c]){groups[c]=[];order.push(c);}
+    groups[c].push(g);
+  });
+  order.forEach(function(c){groups[c].sort(function(a,b){return (a.d||'') < (b.d||'') ? 1 : -1;});});
+  order.sort(function(a,b){
+    if(a==='深圳') return -1;
+    if(b==='深圳') return 1;
+    var na=groups[a].length, nb=groups[b].length;
+    if(na!==nb) return nb-na;
+    return (groups[a][0].d||'') < (groups[b][0].d||'') ? 1 : -1;
+  });
+  w.innerHTML=order.map(function(c){
+    var rows=groups[c].map(function(g){
+      var m=[];
+      if(g.host){m.push('<b class="g-host">'+esc(g.host)+'</b>');}
+      if(g.d){m.push(esc(g.d));}
+      if(g.ty){m.push(esc(g.ty));}
+      if(g.cur!=null){m.push(g.cur+'/'+g.max+'人');}
+      return '<a class="grow" href="'+esc(g.u||'#')+'" target="_blank" rel="noopener">'+
+        '<span class="g-t">'+esc(g.t)+'</span>'+
+        '<span class="g-m">'+m.join(' · ')+'</span>'+
+        '<span class="g-st '+stClass(g.s)+'">'+esc(g.s)+'</span></a>';
+    }).join('');
+    return '<div class="gcity"><div class="gcity-t">'+esc(c)+' <b>'+groups[c].length+'</b> 场</div>'+rows+'</div>';
+  }).join('');
+}
+function bindGroupTabs(){
+  var t=document.getElementById('groupTabs');
+  if(!t)return;
+  t.querySelectorAll('.tab-btn').forEach(function(b){
+    b.addEventListener('click',function(){
+      groupTab=b.getAttribute('data-g')||'national';
+      t.querySelectorAll('.tab-btn').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      renderGroups();
+    });
+  });
+}
+
+/* ---------- 活跃球友 Top 30 ---------- */
+function renderMembers(){
+  var w=document.getElementById('membersWrap');
+  var mc=document.getElementById('mCount');
+  if(!w)return;
+  var list=D.members||[];
+  if(mc) mc.textContent = list.length;
+  if(!list.length){w.innerHTML='<div class="empty">暂无活跃球友统计数据</div>';return;}
+  w.innerHTML=list.map(function(m, idx){
+    return '<a class="mcard" href="'+esc(m.u||'#')+'" target="_blank" rel="noopener" data-idx="'+idx+'">'+
+      avHtml(m.av, m.name, 'mav')+
+      '<div class="minfo"><span class="mname">'+esc(m.name)+'</span><span class="mdom">'+esc(m.dom||'高产型')+'</span></div>'+
+      '<div class="mscore">'+m.score+'<i>活跃分</i></div>'+
+      '<div class="mnum">'+
+        '<span class="l">赞 '+m.likes+'</span>'+
+        '<span class="c">评 '+m.comments+'</span>'+
+        '<span class="n">帖 '+m.posts+'</span>'+
+      '</div>'+
+    '</a>';
+  }).join('');
+
+  var tip = document.getElementById('mTip');
+  if(!tip) return;
+  w.querySelectorAll('.mcard').forEach(function(card){
+    card.addEventListener('mouseenter', function(ev){
+      var idx = parseInt(card.getAttribute('data-idx'), 10);
+      var m = list[idx];
+      if(!m) return;
+      tip.innerHTML =
+        '<div class="mt-h">'+
+          avHtml(m.av, m.name, 'mt-av')+
+          '<div><div class="mt-name">'+esc(m.name)+'</div><span class="mt-dom">'+esc(m.dom||'高产型')+(m.userNumber?' · #'+esc(m.userNumber):'')+'</span></div>'+
+          '<div class="mt-score">'+m.score+'<i>活跃分</i></div>'+
+        '</div>'+
+        '<div class="mt-num">'+
+          '<span>获赞 <b class="l">'+m.likes+'</b></span>'+
+          '<span>评论 <b class="c">'+m.comments+'</b></span>'+
+          '<span>发帖 <b>'+m.posts+'</b></span>'+
+          (m.coins ? '<span>获币 <b>'+m.coins+'</b></span>' : '')+
+        '</div>';
+      tip.hidden = false;
+      moveTip(ev);
+    });
+    card.addEventListener('mousemove', moveTip);
+    card.addEventListener('mouseleave', function(){
+      tip.hidden = true;
+    });
+  });
+  function moveTip(ev){
+    var x = ev.clientX + 14, y = ev.clientY + 14;
+    if(x + 260 > window.innerWidth) x = ev.clientX - 250;
+    if(y + 120 > window.innerHeight) y = ev.clientY - 110;
+    tip.style.left = x + 'px';
+    tip.style.top = y + 'px';
+  }
+}
+
+/* ---------- 每日快照 ---------- */
+function renderSnap(){
+  var tb=document.getElementById('snapBody');
+  var list=D.snapshots||[];
+  if(!list.length){tb.innerHTML='<tr><td colspan="4" class="empty">暂无数据</td></tr>';return;}
+  var today=D.capturedAt?D.capturedAt.slice(5):'';
+  tb.innerHTML=list.map(function(s){
+    var isT = s.d===today;
+    return '<tr class="'+(isT?'today':'')+'"><td class="n">'+esc(s.d)+(isT?'<span class="lbl">最新</span>':'')+'</td>'+
+      '<td>'+s.n+'</td><td class="hot">'+s.L+'</td><td>'+esc(s.top||'—')+'</td></tr>';
+  }).join('');
+}
+
+/* ---------- 运行记录 ---------- */
+function renderRuns(){
+  var w=document.getElementById('runsWrap');
+  var list=(D.runs||[]).slice().reverse();
+  if(!list.length){w.innerHTML='<div class="empty">尚无运行记录，首次自动采集后出现</div>';return;}
+  w.innerHTML=list.map(function(r){
+    return '<div class="run"><span class="r-t">'+esc(r.time)+'</span>'+
+      '<span class="r-b">当日 '+r.today+(r.fill?' + 填充 '+r.fill:'')+' · 获赞 '+r.sum+' · 精华 '+r.elite+(r.top?' · 最活跃 '+esc(r.top):'')+'</span>'+
+      '</div>';
+  }).join('');
+}
+
+/* ---------- 图表 ---------- */
+var charts=[];
+function mk(id){
+  var el=document.getElementById(id);
+  if(!el || !window.echarts) return null;
+  var c=echarts.init(el);
+  charts.push(c);
+  return c;
+}
+function baseTip(trigger){
+  return {trigger:trigger||'axis',triggerOn:'mousemove|click',renderMode:'richText',confine:true};
+}
+function renderTrend(){
+  var c=mk('cTrend');
+  if(!c) return;
+  var x=(D.trend||[]).map(function(t){return t.d;});
+  var v=(D.trend||[]).map(function(t){return t.n;});
+  c.setOption({
+    grid:{left:8,right:16,top:12,bottom:4,containLabel:true},
+    tooltip:baseTip('axis'),
+    xAxis:{type:'category',data:x,boundaryGap:true,
+      axisLine:{lineStyle:{color:'rgba(255,255,255,.16)'}},axisTick:{show:false},
+      axisLabel:{color:'#69718A',fontSize:10,interval:4}},
+    yAxis:{type:'value',minInterval:1,
+      splitLine:{lineStyle:{color:'rgba(255,255,255,.06)'}},
+      axisLabel:{color:'#69718A',fontSize:10}},
+    series:[{type:'bar',data:v,barMaxWidth:16,
+      itemStyle:{borderRadius:[3,3,0,0],color:function(p){return p.value>0?'#FF7A3D':'#2A3145';}},
+      label:{show:false}}]
+  });
+}
+function renderRank(w){
+  var c=mk('cRank');
+  if(!c) return;
+  var arr = w===7?(D.rank7||[]):(D.rank30||[]);
+  var names=arr.map(function(p){return p.t;});
+  var vals=arr.map(function(p){return p.L;});
+  c.setOption({
+    grid:{left:8,right:54,top:10,bottom:6,containLabel:true},
+    tooltip:{trigger:'axis',triggerOn:'mousemove|click',renderMode:'richText',confine:true,
+      formatter:function(ps){
+        var p=ps[0];
+        var item=arr[p.dataIndex]||{};
+        return esc(p.name)+'<br/>作者：'+esc(item.a||'')+'<br/>日期：'+esc(item.d||'')+'<br/>获赞：<b>'+p.value+'</b>';
+      }},
+    xAxis:{type:'value',splitLine:{lineStyle:{color:'rgba(255,255,255,.06)'}},axisLabel:{color:'#69718A',fontSize:10}},
+    yAxis:{type:'category',data:names,inverse:true,
+      axisLine:{lineStyle:{color:'rgba(255,255,255,.16)'}},axisTick:{show:false},
+      axisLabel:{color:'#D5DAE8',fontSize:11,width:165,overflow:'truncate'}},
+    series:[{type:'bar',data:vals,barWidth:'55%',
+      itemStyle:{borderRadius:[0,4,4,0],color:function(p){return p.dataIndex===0?'#FF7A3D':'#46506A';}},
+      label:{show:true,position:'right',fontSize:11,color:'#A7AEC4',formatter:function(p){return p.value+' 赞';}}}]
+  });
+  c.on('click', function(params){
+    var item = arr[params.dataIndex];
+    if(item && item.u) window.open(item.u, '_blank');
+  });
+}
+function renderTopics(){
+  var c=mk('cTopics');
+  if(!c) return;
+  var names=(D.topics||[]).map(function(t){return t.name;});
+  var vals=(D.topics||[]).map(function(t){return t.L;});
+  c.setOption({
+    grid:{left:8,right:44,top:14,bottom:6,containLabel:true},
+    tooltip:baseTip('axis'),
+    xAxis:{type:'value',splitLine:{lineStyle:{color:'rgba(255,255,255,.06)'}},axisLabel:{color:'#69718A',fontSize:10}},
+    yAxis:{type:'category',data:names,inverse:true,
+      axisLine:{lineStyle:{color:'rgba(255,255,255,.16)'}},axisTick:{show:false},
+      axisLabel:{color:'#C6CCDC',fontSize:11}},
+    series:[{type:'bar',data:vals,barWidth:'58%',
+      itemStyle:{borderRadius:[0,4,4,0],color:function(p){return PALETTE[p.dataIndex%PALETTE.length];}},
+      label:{show:true,position:'right',fontSize:11,color:'#A7AEC4',formatter:function(p){return p.value;}}}]
+  });
+}
+
+/* ---------- 交互 ---------- */
+var rankWin=7;
+function bindSeg(){
+  var seg=document.getElementById('rankSeg');
+  if(!seg) return;
+  var btns=seg.querySelectorAll('button');
+  btns.forEach(function(b){
+    b.addEventListener('click',function(){
+      rankWin=parseInt(b.getAttribute('data-w'),10)||7;
+      btns.forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on');
+      charts.forEach(function(c){if(c)c.dispose();});
+      charts=[];
+      renderAllCharts();
+    });
+  });
+}
+function renderAllCharts(){
+  renderTrend();renderRank(rankWin);renderTopics();
+}
+function resizeCharts(){
+  charts.forEach(function(c){if(c)c.resize();});
+}
+window.addEventListener('resize',function(){resizeCharts();});
+
+/* ---------- 数据外置：优先拉取 data.json，失败用内嵌数据 ---------- */
+function refreshAll(){
+  charts.forEach(function(c){if(c)c.dispose();});
+  charts=[];
+  initHeader();renderKpis();renderRecs();renderPosts();renderActions();renderGroups();
+  renderMembers();renderSnap();renderRuns();renderAllCharts();
+}
+function loadRemote(){
+  try{
+    if(!window.location || window.location.protocol==='file:'){return;}
+  }catch(e){return;}
+  fetch('data.json',{cache:'no-store'}).then(function(r){
+    if(!r.ok){throw new Error('bad');}
+    return r.json();
+  }).then(function(d){
+    if(!d || !d.latest || !d.latest.length || !d.updatedAt){return;}
+    D=d;
+    refreshAll();
+  }).catch(function(){});
+}
+
+/* ---------- 启动 ---------- */
+function init(){
+  initHeader();renderKpis();renderRecs();renderPosts();renderActions();renderGroups();
+  renderMembers();renderSnap();renderRuns();renderAllCharts();bindSeg();bindPostTabs();bindGroupTabs();
+  loadRemote();
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}
+else{init();}
+})();
+</script>
+<div id="mTip" class="mtip" hidden></div>
+</body>
+</html>
